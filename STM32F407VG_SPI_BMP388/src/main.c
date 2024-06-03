@@ -61,8 +61,6 @@ BMP388_InterruptConfig bmp388interruptConfig;
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 static void USART_UART_Init(void);
-static void SPI_Init(void);
-static void SPI2_CS_Init(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -95,11 +93,8 @@ int main(void)
     /*#### Configure the UART peripheral #####################################*/
     USART_UART_Init();
 
-    /*#### Configure the SPI peripheral ######################################*/
-    SPI_Init();
-    SPI2_CS_Init();
-
     /*#### Configure the BMP388 Device ######################################*/
+
     // initial BMP388 settings to save to the device
     bmp388initConfig.Communication_Mode = BMP388_SERIAL_INTERFACE_4WIRE; // default
     bmp388initConfig.Sensor_Measurement_Mode = BMP388_MEASUREMENT_CONFIG_TEMP_AND_PRESSURE;
@@ -109,7 +104,7 @@ int main(void)
     bmp388initConfig.Output_DataRate = BMP388_ODR_25_HZ; // see section 3.9.2 for maximum ODR based on OSR values
     bmp388initConfig.Filter_Setting = BMP388_IIR_FILTER_COEF_3;
 
-    // BMP388_Initialize(&bmp388initConfig);
+    BMP388_Initialize(&bmp388initConfig);
 
     // initial BMP388 interrupt settings to save to the device
     bmp388interruptConfig.Output_Type = BMP388_INTERRUPT_OUTOUT_PUSH_PULL; // defualt
@@ -119,154 +114,35 @@ int main(void)
     bmp388interruptConfig.Fifo_Full = BMP388_INTERRUPT_FIFO_FULL_DISABLED;
     bmp388interruptConfig.Data_Ready = BMP388_INTERRUPT_DATA_READY_ENABLED;
 
-    // BMP388_ConfigureInterrupt(&bmp388interruptConfig);
-
-    // check BMP388 chip ID
-    // uint8_t chipID = (uint8_t) 0x00;
-    // chipID = BMP388_ReadID();
-    // uint8_t chipID = 0x00;
-    // uint8_t id = BMP388_ReadID();
-
-    // for (size_t i = 0; i < 10; i++)
-    // {
-    //     id = BMP388_ReadID();
-    //     BSP_LED_Toggle(LED3);
-    //     HAL_Delay(1000);
-    // }
-
-    // chipID = (uint8_t) id;
-
-
-
-
-    // toggle LED3 if chip matches
-    // if (chipID == BMP388_CHIP_ID)
-    // {
-    //     for (size_t i = 0; i < 10; i++)
-    //     {
-    //         chipID = BMP388_ReadID();
-    //         BSP_LED_Toggle(LED3);
-    //         HAL_Delay(100);
-    //     }
-    // }
-    // else
-    // {
-    //     for (size_t i = 0; i < 3; i++)
-    //     {
-    //         BSP_LED_Toggle(LED3);
-    //         HAL_Delay(2000);
-    //     }
-    // }
-
-
-
-    // char chipIdString[100];
-
-    // snprintf((char *) chipIdString, 36, "chip ID is %4u (0x%X)\n", chipID, chipID);
-
-    // if (HAL_UART_Transmit(&UartHandle, (uint8_t *)chipIdString, 25, 5000) != HAL_OK)
-    // {
-    //     Error_Handler();
-    // }
-
+    BMP388_ConfigureInterrupt(&bmp388interruptConfig);
 
     char uart_buf[100];
     int uart_buf_len;
-    char spi_buf[20];
 
     // Start Test
+    // TODO use snprintf
     uart_buf_len = sprintf(uart_buf, "SPI Test\r\n");
     // TODO use HAL_UART_TRANSMIT_IT later
-    if(HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100) != HAL_OK)
+    if (HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100) != HAL_OK)
     {
         Error_Handler();
     }
 
-    // BMP388 CS pin should be default high
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    // check BMP388 chip ID
+    uint8_t chipID = (uint8_t)0x00;
+    chipID = BMP388_ReadID();
 
-    HAL_Delay(500);
-
-    /* read chip id */
-    // set CS low to start transaction
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-
-    uint8_t chipIdCmd = BMP388_CHIP_ID_ADDR | READWRITE_CMD;
-
-    // HAL_SPI_Transmit or HAL_SPI_TransmitReceive can be used
-    // The dummy byte received is 0xFF
-    if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&chipIdCmd, (uint8_t *)spi_buf , 1, 100) != HAL_OK)
-    // if (HAL_SPI_Transmit(&SpiHandle, (uint8_t *)&chipIdCmd, 1, 100) != HAL_OK)
-    {
-        uart_buf_len = sprintf(uart_buf, "Error: Unable to Transmit chipIdCmd over SPI!\r\n");
-        HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-        Error_Handler();
-    }
-    uart_buf_len = sprintf(uart_buf, "receivedByte: 0x%02x\r\n", (unsigned int) spi_buf[0]);
+    uart_buf_len = sprintf(uart_buf, "Chip ID is 0x%02x\r\n", chipID);
     HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-
-    // Test first read byte
-    uint8_t receivedByte1;
-    // if (HAL_SPI_Receive(&SpiHandle, (uint8_t *)spi_buf , 1, 100) != HAL_OK)
-    if (HAL_SPI_Receive(&SpiHandle, (uint8_t *)&receivedByte1 , 1, 100) != HAL_OK)
-    // if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)BMP388_DUMMY_BYTE,(uint8_t *)&receivedByte1 , 1, 100) != HAL_OK)
-    {
-        uart_buf_len = sprintf(uart_buf, "Error: Unable to read byte 1 over SPI!\r\n");
-        HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-        Error_Handler();
-    }
-    uart_buf_len = sprintf(uart_buf, "receivedByte1: 0x%02x\r\n", receivedByte1);
-    HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-    // uart_buf_len = sprintf(uart_buf, "receivedByte1: 0x%02x\r\n", (unsigned int) spi_buf[0]);
-    // HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-
-
-    // Test second read byte
-    // HAL_SPI_Receive or HAL_SPI_TransmitReceive can be used
-    // uint8_t receivedByte2;
-    uint8_t dummyTx = BMP388_CHIP_ID_ADDR;
-    // if (HAL_SPI_Receive(&SpiHandle, (uint8_t *)spi_buf , 1, 100) != HAL_OK)
-    // if (HAL_SPI_Receive(&SpiHandle, (uint8_t *)&receivedByte2 , 1, 100) != HAL_OK)
-    if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&dummyTx, (uint8_t *)spi_buf , 1, 100) != HAL_OK)
-    {
-        uart_buf_len = sprintf(uart_buf, "Error: Unable to read byte 2 over SPI!\r\n");
-        HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-        Error_Handler();
-    }
-    // uart_buf_len = sprintf(uart_buf, "receivedByte2: 0x%02x\r\n", receivedByte2);
-    // HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-    uart_buf_len = sprintf(uart_buf, "receivedByte2: 0x%02x\r\n", (unsigned int) spi_buf[0]);
-    HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-
-    // set CS back to high
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-
-    // /* Test multibyte SPI call */
-
-    // set CS low to start transaction
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-
-    uint8_t chipIdTransaction[3] = {0};
-    chipIdTransaction[0] = BMP388_CHIP_ID_ADDR | READWRITE_CMD;
-    if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&chipIdTransaction[0], (uint8_t *)&spi_buf[0] , 3, 100) != HAL_OK)
-    {
-        uart_buf_len = sprintf(uart_buf, "Error: Unable to complete chipIdTransaction over SPI!\r\n");
-        HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-        Error_Handler();
-    }
-    uart_buf_len = sprintf(uart_buf, "receivedBytes: 0x%02x, 0x%02x, 0x%02x\r\n", (unsigned int) spi_buf[0], (unsigned int) spi_buf[1], (unsigned int) spi_buf[2]);
-    HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
-
-    // set CS back to high
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-
-    // TODO later
 
     // read raw sensor values
-    // uint32_t pressureRaw = 0;
-    // uint32_t tempRaw = 0;
+    uint32_t pressureRaw = 0;
+    uint32_t tempRaw = 0;
 
-    // BMP388_ReadRawData(&pressureRaw, &tempRaw);
+    BMP388_ReadRawData(&pressureRaw, &tempRaw);
+
+    uart_buf_len = sprintf(uart_buf, "pressureRaw is %d (0x%08x), tempRaw is %d (0x%08x)\r\n", (unsigned int)pressureRaw, (unsigned int)pressureRaw, (unsigned int)tempRaw, (unsigned int)tempRaw);
+    HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
 
 #ifdef TRANSMITTER_BOARD
     /* Configure KEY Button */
@@ -468,60 +344,6 @@ static void USART_UART_Init(void)
     {
         Error_Handler();
     }
-}
-
-
-/**
- * @brief SPI Initialization Function
- * @param None
- * @retval None
- */
-static void SPI_Init(void)
-{
-    /* Set the SPI parameters */
-    SpiHandle.Instance = SPIx;
-    SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-    SpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
-    SpiHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
-    SpiHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
-    SpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    SpiHandle.Init.CRCPolynomial = 7;
-    SpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
-    SpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    SpiHandle.Init.NSS = SPI_NSS_SOFT;
-    SpiHandle.Init.TIMode = SPI_TIMODE_DISABLE;
-    SpiHandle.Init.Mode = SPI_MODE_MASTER;
-    if (HAL_SPI_Init(&SpiHandle) != HAL_OK)
-    {
-        /* Initialization Error */
-        Error_Handler();
-    }
-}
-
-/**
-  * @brief SPI2 Chip Select Initialization Function
-  * @param None
-  * @retval None
-  */
-static void SPI2_CS_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-
-    /*Configure GPIO pin : PB12 */
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    /* USER CODE BEGIN MX_GPIO_Init_2 */
-    /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /**

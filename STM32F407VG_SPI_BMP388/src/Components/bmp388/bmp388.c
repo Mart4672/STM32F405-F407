@@ -111,16 +111,17 @@ void BMP388_Teardown(void)
  */
 uint8_t BMP388_ReadID(void)
 {
-    uint8_t tmp = 0;
+    // read 2 bytes after the initial address byte transaction
+    uint8_t chipIdTransactionRx[2];
 
-    /* Configure the low level interface */
+    // configure the low level interface
     BMP388_IO_Init();
 
-    /* Read chip ID register */
-    BMP388_IO_Read(&tmp, BMP388_CHIP_ID_ADDR, 1);
+    // perform the 3 byte SPI read/write transaction 
+    BMP388_IO_Read(chipIdTransactionRx, BMP388_CHIP_ID_ADDR, 2);
 
-    /* Return the ID */
-    return (uint8_t)tmp;
+    // return the chip id - the second read byte
+    return chipIdTransactionRx[1];
 }
 
 /**
@@ -230,15 +231,15 @@ void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt
     // BMP388_DATA_0_PRESS_7_0, BMP388_DATA_1_PRESS_15_8, BMP388_DATA_2_PRESS_23_16
     // BMP388_DATA_3_TEMP_7_0, BMP388_DATA_4_TEMP_15_8, BMP388_DATA_5_TEMP_23_16
 
-    uint8_t buffer[6];
+    uint8_t buffer[7];
 
     // burst read so that data register shadowing (3.10.1) can ensure
     // data consistency - i.e. no register overwriting while reading
-    BMP388_IO_Read((uint8_t *)&buffer, BMP388_DATA_0_PRESS_7_0, 6);
+    BMP388_IO_Read((uint8_t *)&buffer, BMP388_DATA_0_PRESS_7_0, 7);
 
     // set data values from buffer
-    pressureUnsignedInt[0] = (buffer[2] << 16) + (buffer[1] << 8) + buffer[1];
-    tempUnsignedInt[0] = (buffer[5] << 16) + (buffer[4] << 8) + buffer[3];
+    pressureUnsignedInt[0] = (buffer[3] << 16) + (buffer[2] << 8) + buffer[1];
+    tempUnsignedInt[0] = (buffer[6] << 16) + (buffer[5] << 8) + buffer[4];
 }
 
 /**     BMP388_Private_Functions

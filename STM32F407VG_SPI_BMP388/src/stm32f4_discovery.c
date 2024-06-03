@@ -82,8 +82,9 @@ const uint8_t BUTTON_IRQn[BUTTONn] = {KEY_BUTTON_EXTI_IRQn};
 uint32_t I2cxTimeout = I2Cx_TIMEOUT_MAX; /*<! Value of Timeout when I2C communication fails */
 uint32_t SpixTimeout = SPIx_TIMEOUT_MAX; /*<! Value of Timeout when SPI communication fails */
 
-// static SPI_HandleTypeDef SpiHandle;
-static I2C_HandleTypeDef I2cHandle;
+static SPI_HandleTypeDef hspi1;
+static SPI_HandleTypeDef hspi2;
+
 /**
  * @}
  */
@@ -98,16 +99,14 @@ static I2C_HandleTypeDef I2cHandle;
 /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_Private_Functions STM32F4 DISCOVERY LOW LEVEL Private Functions
  * @{
  */
-static void I2Cx_Init(void);
-static void I2Cx_WriteData(uint8_t Addr, uint8_t Reg, uint8_t Value);
-static uint8_t I2Cx_ReadData(uint8_t Addr, uint8_t Reg);
-static void I2Cx_MspInit(void);
-static void I2Cx_Error(uint8_t Addr);
 
-// static void SPIx_Init(void);
-// static void SPIx_MspInit(void);
-// static uint8_t SPIx_WriteRead(uint8_t Byte);
-// static void SPIx_Error(void);
+static void SPI1_Init(void);
+static uint8_t SPI1_WriteRead(uint8_t Byte);
+static void SPI1_Error(void);
+
+static void SPI2_Init(void);
+static uint8_t SPI2_WriteRead(uint8_t Byte);
+static void SPI2_Error(void);
 
 /* Link functions for Accelerometer peripheral */
 void ACCELERO_IO_Init(void);
@@ -115,11 +114,6 @@ void ACCELERO_IO_ITConfig(void);
 void ACCELERO_IO_Write(uint8_t *pBuffer, uint8_t WriteAddr, uint16_t NumByteToWrite);
 void ACCELERO_IO_Read(uint8_t *pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead);
 
-/* Link functions for Audio peripheral */
-void AUDIO_IO_Init(void);
-void AUDIO_IO_DeInit(void);
-void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
-uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
 /**
  * @}
  */
@@ -283,30 +277,30 @@ uint32_t BSP_PB_GetState(Button_TypeDef Button)
 /******************************* SPI Routines *********************************/
 
 /**
- * @brief  SPIx Bus initialization
+ * @brief  SPI1 Bus initialization
  */
-// static void SPIx_Init(void)
-// {
-//     if (HAL_SPI_GetState(&SpiHandle) == HAL_SPI_STATE_RESET)
-//     {
-//         /* SPI configuration -----------------------------------------------------*/
-//         SpiHandle.Instance = DISCOVERY_SPIx;
-//         SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-//         SpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
-//         SpiHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
-//         SpiHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
-//         SpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-//         SpiHandle.Init.CRCPolynomial = 7;
-//         SpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
-//         SpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
-//         SpiHandle.Init.NSS = SPI_NSS_SOFT;
-//         SpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
-//         SpiHandle.Init.Mode = SPI_MODE_MASTER;
+static void SPI1_Init(void)
+{
+    if (HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_RESET)
+    {
+        /* SPI configuration -----------------------------------------------------*/
+        hspi1.Instance = SPI1;
+        hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+        hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+        hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+        hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+        hspi1.Init.CRCPolynomial = 7;
+        hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+        hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+        hspi1.Init.NSS = SPI_NSS_SOFT;
+        hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+        hspi1.Init.Mode = SPI_MODE_MASTER;
 
-//         // SPIx_MspInit();
-//         HAL_SPI_Init(&SpiHandle);
-//     }
-// }
+        // HAL_SPI_Init internally calls HAL_SPI_MspInit in stm32f4xx_hal_msp.c
+        HAL_SPI_Init(&hspi1);
+    }
+}
 
 /**
  * @brief  Sends a Byte through the SPI interface and return the Byte received
@@ -314,165 +308,89 @@ uint32_t BSP_PB_GetState(Button_TypeDef Button)
  * @param  Byte: Byte send.
  * @retval The received byte value
  */
-// static uint8_t SPIx_WriteRead(uint8_t Byte)
-// {
-//     uint8_t receivedbyte = 0;
-
-//     /* Send a Byte through the SPI peripheral */
-//     /* Read byte from the SPI bus */
-//     if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&Byte, (uint8_t *)&receivedbyte, 1, SpixTimeout) != HAL_OK)
-//     {
-//         SPIx_Error();
-//     }
-
-//     return receivedbyte;
-// }
-
-/**
- * @brief  SPIx error treatment function.
- */
-// static void SPIx_Error(void)
-// {
-//     /* De-initialize the SPI communication bus */
-//     HAL_SPI_DeInit(&SpiHandle);
-
-//     /* Re-Initialize the SPI communication bus */
-//     // SPIx_Init();
-// }
-
-/**
- * @brief  SPI MSP Init.
- */
-// static void SPIx_MspInit(void)
-// {
-//     GPIO_InitTypeDef GPIO_InitStructure;
-
-//     /* Enable the SPI peripheral */
-//     DISCOVERY_SPIx_CLK_ENABLE();
-
-//     /* Enable SCK, MOSI and MISO GPIO clocks */
-//     DISCOVERY_SPIx_GPIO_CLK_ENABLE();
-
-//     /* SPI SCK, MOSI, MISO pin configuration */
-//     GPIO_InitStructure.Pin = (DISCOVERY_SPIx_SCK_PIN | DISCOVERY_SPIx_MISO_PIN | DISCOVERY_SPIx_MOSI_PIN);
-//     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-//     GPIO_InitStructure.Pull = GPIO_PULLDOWN;
-//     GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-//     GPIO_InitStructure.Alternate = DISCOVERY_SPIx_AF;
-//     HAL_GPIO_Init(DISCOVERY_SPIx_GPIO_PORT, &GPIO_InitStructure);
-// }
-
-/******************************* I2C Routines**********************************/
-/**
- * @brief  Configures I2C interface.
- */
-static void I2Cx_Init(void)
+static uint8_t SPI1_WriteRead(uint8_t Byte)
 {
-    if (HAL_I2C_GetState(&I2cHandle) == HAL_I2C_STATE_RESET)
-    {
-        /* DISCOVERY_I2Cx peripheral configuration */
-        I2cHandle.Init.ClockSpeed = BSP_I2C_SPEED;
-        I2cHandle.Init.DutyCycle = I2C_DUTYCYCLE_2;
-        I2cHandle.Init.OwnAddress1 = 0x33;
-        I2cHandle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-        I2cHandle.Instance = DISCOVERY_I2Cx;
+    uint8_t receivedbyte = 0;
 
-        /* Init the I2C */
-        I2Cx_MspInit();
-        HAL_I2C_Init(&I2cHandle);
+    /* Send a Byte through the SPI peripheral */
+    /* Read byte from the SPI bus */
+    if (HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)&Byte, (uint8_t *)&receivedbyte, 1, SpixTimeout) != HAL_OK)
+    {
+        SPI1_Error();
+    }
+
+    return receivedbyte;
+}
+
+/**
+ * @brief  SPI1 error treatment function.
+ */
+static void SPI1_Error(void)
+{
+    // HAL_SPI_DeInit internally calls HAL_SPI_MspDeInit in stm32f4xx_hal_msp.c
+    HAL_SPI_DeInit(&hspi1);
+
+    // Re-Initialize the SPI communication bus
+    SPI1_Init();
+}
+
+/**
+ * @brief  SPI2 Bus initialization
+ */
+static void SPI2_Init(void)
+{
+    // only initialize if not set up
+    if (HAL_SPI_GetState(&hspi2) == HAL_SPI_STATE_RESET)
+    {
+        /* SPI configuration -----------------------------------------------------*/
+        hspi2.Instance = SPI2;
+        hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+        hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+        hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+        hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+        hspi2.Init.CRCPolynomial = 7;
+        hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+        hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+        hspi2.Init.NSS = SPI_NSS_SOFT;
+        hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
+        hspi2.Init.Mode = SPI_MODE_MASTER;
+
+        // HAL_SPI_Init internally calls HAL_SPI_MspInit in stm32f4xx_hal_msp.c
+        HAL_SPI_Init(&hspi2);
     }
 }
 
 /**
- * @brief  Write a value in a register of the device through BUS.
- * @param  Addr: Device address on BUS Bus.
- * @param  Reg: The target register address to write
- * @param  Value: The target register value to be written
- * @retval HAL status
+ * @brief  Sends a Byte through the SPI interface and return the Byte received
+ *         from the SPI bus.
+ * @param  Byte: Byte send.
+ * @retval The received byte value
  */
-static void I2Cx_WriteData(uint8_t Addr, uint8_t Reg, uint8_t Value)
+static uint8_t SPI2_WriteRead(uint8_t Byte)
 {
-    HAL_StatusTypeDef status = HAL_OK;
+    uint8_t receivedbyte = 0;
 
-    status = HAL_I2C_Mem_Write(&I2cHandle, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2cxTimeout);
-
-    /* Check the communication status */
-    if (status != HAL_OK)
+    /* Send a Byte through the SPI peripheral */
+    /* Read byte from the SPI bus */
+    if (HAL_SPI_TransmitReceive(&hspi2, (uint8_t *)&Byte, (uint8_t *)&receivedbyte, 1, SpixTimeout) != HAL_OK)
     {
-        /* Execute user timeout callback */
-        I2Cx_Error(Addr);
+        SPI2_Error();
     }
+
+    return receivedbyte;
 }
 
 /**
- * @brief  Read a register of the device through BUS
- * @param  Addr: Device address on BUS
- * @param  Reg: The target register address to read
- * @retval HAL status
+ * @brief  SPI2 error treatment function.
  */
-static uint8_t I2Cx_ReadData(uint8_t Addr, uint8_t Reg)
+static void SPI2_Error(void)
 {
-    HAL_StatusTypeDef status = HAL_OK;
-    uint8_t value = 0;
+    // HAL_SPI_DeInit internally calls HAL_SPI_MspDeInit in stm32f4xx_hal_msp.c
+    HAL_SPI_DeInit(&hspi2);
 
-    status = HAL_I2C_Mem_Read(&I2cHandle, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT, &value, 1, I2cxTimeout);
-
-    /* Check the communication status */
-    if (status != HAL_OK)
-    {
-        /* Execute user timeout callback */
-        I2Cx_Error(Addr);
-    }
-    return value;
-}
-
-/**
- * @brief  Manages error callback by re-initializing I2C.
- * @param  Addr: I2C Address
- */
-static void I2Cx_Error(uint8_t Addr)
-{
-    /* De-initialize the I2C communication bus */
-    HAL_I2C_DeInit(&I2cHandle);
-
-    /* Re-Initialize the I2C communication bus */
-    I2Cx_Init();
-}
-
-/**
- * @brief I2C MSP Initialization
- */
-static void I2Cx_MspInit(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    /* Enable I2C GPIO clocks */
-    DISCOVERY_I2Cx_SCL_SDA_GPIO_CLK_ENABLE();
-
-    /* DISCOVERY_I2Cx SCL and SDA pins configuration ---------------------------*/
-    GPIO_InitStruct.Pin = DISCOVERY_I2Cx_SCL_PIN | DISCOVERY_I2Cx_SDA_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Alternate = DISCOVERY_I2Cx_SCL_SDA_AF;
-    HAL_GPIO_Init(DISCOVERY_I2Cx_SCL_SDA_GPIO_PORT, &GPIO_InitStruct);
-
-    /* Enable the DISCOVERY_I2Cx peripheral clock */
-    DISCOVERY_I2Cx_CLK_ENABLE();
-
-    /* Force the I2C peripheral clock reset */
-    DISCOVERY_I2Cx_FORCE_RESET();
-
-    /* Release the I2C peripheral clock reset */
-    DISCOVERY_I2Cx_RELEASE_RESET();
-
-    /* Enable and set I2Cx Interrupt to the highest priority */
-    HAL_NVIC_SetPriority(DISCOVERY_I2Cx_EV_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_I2Cx_EV_IRQn);
-
-    /* Enable and set I2Cx Interrupt to the highest priority */
-    HAL_NVIC_SetPriority(DISCOVERY_I2Cx_ER_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_I2Cx_ER_IRQn);
+    // Re-Initialize the SPI communication bus
+    SPI2_Init();
 }
 
 /*******************************************************************************
@@ -488,20 +406,25 @@ void BMP388_IO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
-    /* Enable CS GPIO clock and configure GPIO pin for Chip select */
+    // Enable the GPIO clock for the Chip Select pin
     BMP388_CS_GPIO_CLK_ENABLE();
 
-    /* Configure GPIO PIN for LIS Chip select */
+    // Configure the GPIO pin for BMP388 Chip select
     GPIO_InitStructure.Pin = BMP388_CS_PIN;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
     HAL_GPIO_Init(BMP388_CS_GPIO_PORT, &GPIO_InitStructure);
 
-    /* Deselect: Chip Select high */
+    // set the CS pin low for a while to ensure the SPI interface is activated and I2C is disabled
+    BMP388_CS_LOW();
+    HAL_Delay(200);
+
+    // BMP388 CS pin should be default high
     BMP388_CS_HIGH();
 
-    // SPIx_Init();
+    // Initalize SPI2 Bus
+    SPI2_Init();
 }
 
 /**
@@ -540,12 +463,12 @@ void BMP388_IO_Write(uint8_t *pBuffer, uint8_t WriteAddr, uint16_t NumByteToWrit
     BMP388_CS_LOW();
 
     /* Send the Address of the indexed register */
-    // SPIx_WriteRead(WriteAddr);
+    SPI2_WriteRead(WriteAddr);
 
     /* Send the data that will be written into the device (MSB First) */
     while (NumByteToWrite >= 0x01)
     {
-        // SPIx_WriteRead(*pBuffer);
+        SPI2_WriteRead(*pBuffer);
         NumByteToWrite--;
         pBuffer++;
     }
@@ -569,13 +492,13 @@ void BMP388_IO_Read(uint8_t *pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
     BMP388_CS_LOW();
 
     /* Send the Address of the indexed register */
-    // SPIx_WriteRead(ReadAddr);
+    SPI2_WriteRead(ReadAddr);
 
     /* Receive the data that will be read from the device (MSB First) */
     while (NumByteToRead > 0x00)
     {
         /* Send dummy byte (0x00) to generate the SPI clock for the peripheral device */
-        // *pBuffer = SPIx_WriteRead(BMP388_DUMMY_BYTE);
+        *pBuffer = SPI2_WriteRead(BMP388_DUMMY_BYTE);
         NumByteToRead--;
         pBuffer++;
     }
@@ -607,7 +530,8 @@ void ACCELERO_IO_Init(void)
     /* Deselect: Chip Select high */
     ACCELERO_CS_HIGH();
 
-    // SPIx_Init();
+    /* Initialize SPI Bus */
+    SPI1_Init();
 }
 
 /**
@@ -642,8 +566,8 @@ void ACCELERO_IO_ITConfig(void)
 void ACCELERO_IO_Write(uint8_t *pBuffer, uint8_t WriteAddr, uint16_t NumByteToWrite)
 {
     /* Configure the MS bit:
-        - When 0, the address will remain unchanged in multiple read/write commands.
-        - When 1, the address will be auto incremented in multiple read/write commands.
+    - When 0, the address will remain unchanged in multiple read/write commands.
+    - When 1, the address will be auto incremented in multiple read/write commands.
     */
     if (NumByteToWrite > 0x01)
     {
@@ -653,12 +577,12 @@ void ACCELERO_IO_Write(uint8_t *pBuffer, uint8_t WriteAddr, uint16_t NumByteToWr
     ACCELERO_CS_LOW();
 
     /* Send the Address of the indexed register */
-    // SPIx_WriteRead(WriteAddr);
+    SPI1_WriteRead(WriteAddr);
 
     /* Send the data that will be written into the device (MSB First) */
     while (NumByteToWrite >= 0x01)
     {
-        // SPIx_WriteRead(*pBuffer);
+        SPI1_WriteRead(*pBuffer);
         NumByteToWrite--;
         pBuffer++;
     }
@@ -687,82 +611,19 @@ void ACCELERO_IO_Read(uint8_t *pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead
     ACCELERO_CS_LOW();
 
     /* Send the Address of the indexed register */
-    // SPIx_WriteRead(ReadAddr);
+    SPI1_WriteRead(ReadAddr);
 
     /* Receive the data that will be read from the device (MSB First) */
     while (NumByteToRead > 0x00)
     {
         /* Send dummy byte (0x00) to generate the SPI clock to ACCELEROMETER (Slave device) */
-        // *pBuffer = SPIx_WriteRead(DUMMY_BYTE);
+        *pBuffer = SPI1_WriteRead(DUMMY_BYTE);
         NumByteToRead--;
         pBuffer++;
     }
 
     /* Set chip select High at the end of the transmission */
     ACCELERO_CS_HIGH();
-}
-
-/********************************* LINK AUDIO *********************************/
-
-/**
- * @brief  Initializes Audio low level.
- */
-void AUDIO_IO_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    /* Enable Reset GPIO Clock */
-    AUDIO_RESET_GPIO_CLK_ENABLE();
-
-    /* Audio reset pin configuration */
-    GPIO_InitStruct.Pin = AUDIO_RESET_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(AUDIO_RESET_GPIO, &GPIO_InitStruct);
-
-    I2Cx_Init();
-
-    /* Power Down the codec */
-    HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
-
-    /* Wait for a delay to insure registers erasing */
-    HAL_Delay(5);
-
-    /* Power on the codec */
-    HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
-
-    /* Wait for a delay to insure registers erasing */
-    HAL_Delay(5);
-}
-
-/**
- * @brief  DeInitializes Audio low level.
- */
-void AUDIO_IO_DeInit(void)
-{
-}
-
-/**
- * @brief  Writes a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @param  Value: Data to be written
- */
-void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value)
-{
-    I2Cx_WriteData(Addr, Reg, Value);
-}
-
-/**
- * @brief  Reads a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @retval Data to be read
- */
-uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg)
-{
-    return I2Cx_ReadData(Addr, Reg);
 }
 
 /**

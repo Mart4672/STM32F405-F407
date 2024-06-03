@@ -44,6 +44,7 @@ extern "C"
     /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_Exported_Types STM32F4 DISCOVERY LOW LEVEL_Exported_Types
      * @{
      */
+
     typedef enum
     {
         LED4 = 0,
@@ -62,13 +63,14 @@ extern "C"
         BUTTON_MODE_GPIO = 0,
         BUTTON_MODE_EXTI = 1
     } ButtonMode_TypeDef;
-/**
- * @}
- */
 
-/** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_Exported_Constants STM32F4 DISCOVERY LOW LEVEL Exported Constants
- * @{
- */
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Types
+     * @}
+     */
+
+    /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_Exported_Constants STM32F4 DISCOVERY LOW LEVEL Exported Constants
+     * @{
+     */
 
 /**
  * @brief  Define for STM32F4_DISCOVERY board
@@ -77,9 +79,10 @@ extern "C"
 #define USE_STM32F4_DISCO
 #endif
 
-/** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_LED STM32F4 DISCOVERY LOW LEVEL LED
- * @{
- */
+    /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_LED STM32F4 DISCOVERY LOW LEVEL LED
+     * @{
+     */
+
 #define LEDn 4
 
 #define LED4_PIN GPIO_PIN_12
@@ -127,13 +130,14 @@ extern "C"
         else if ((__INDEX__) == 3)       \
             LED6_GPIO_CLK_DISABLE();     \
     } while (0)
-/**
- * @}
- */
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_LED
+     * @}
+     */
 
-/** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUTTON STM32F4 DISCOVERY LOW LEVEL BUTTON
- * @{
- */
+    /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUTTON STM32F4 DISCOVERY LOW LEVEL BUTTON
+     * @{
+     */
+
 #define BUTTONn 1
 
 /**
@@ -158,30 +162,22 @@ extern "C"
         if ((__INDEX__) == 0)               \
             KEY_BUTTON_GPIO_CLK_DISABLE();  \
     } while (0)
-/**
- * @}
- */
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_BUTTON
+     * @}
+     */
 
-/** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUS STM32F4 DISCOVERY LOW LEVEL BUS
- * @{
- */
+    /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUS STM32F4 DISCOVERY LOW LEVEL BUS
+     * @{
+     */
 
 /*############################### SPI1 #######################################*/
-// #define DISCOVERY_SPIx SPI1
-// #define DISCOVERY_SPIx_CLK_ENABLE() __HAL_RCC_SPI1_CLK_ENABLE()
-// #define DISCOVERY_SPIx_GPIO_PORT GPIOA /* GPIOA */
-// #define DISCOVERY_SPIx_AF GPIO_AF5_SPI1
-// #define DISCOVERY_SPIx_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
-// #define DISCOVERY_SPIx_GPIO_CLK_DISABLE() __HAL_RCC_GPIOA_CLK_DISABLE()
-// #define DISCOVERY_SPIx_SCK_PIN GPIO_PIN_5  /* PA.05 */
-// #define DISCOVERY_SPIx_MISO_PIN GPIO_PIN_6 /* PA.06 */
-// #define DISCOVERY_SPIx_MOSI_PIN GPIO_PIN_7 /* PA.07 */
 
-/* Maximum Timeout values for flags waiting loops. These timeouts are not based
-   on accurate values, they just guarantee that the application will not remain
-   stuck if the SPI communication is corrupted.
-   You may modify these timeout values depending on CPU frequency and application
-   conditions (interrupts routines ...). */
+/** Maximum Timeout values for flags waiting loops. These timeouts are not based
+ * on accurate values, they just guarantee that the application will not remain
+ * stuck if the SPI communication is corrupted. You may modify these timeout
+ * values depending on CPU frequency and application conditions (interrupts
+ * routines ...).
+ */
 #define SPIx_TIMEOUT_MAX 0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
 
 /*############################# I2C1 #########################################*/
@@ -190,7 +186,7 @@ extern "C"
 #define BSP_I2C_SPEED 100000
 #endif /* BSP_I2C_SPEED */
 
-/* I2C peripheral configuration defines (control interface of the audio codec) */
+/* I2C peripheral configuration defines */
 #define DISCOVERY_I2Cx I2C1
 #define DISCOVERY_I2Cx_CLK_ENABLE() __HAL_RCC_I2C1_CLK_ENABLE()
 #define DISCOVERY_I2Cx_SCL_SDA_GPIO_CLK_ENABLE() __HAL_RCC_GPIOB_CLK_ENABLE()
@@ -208,7 +204,7 @@ extern "C"
 
 /* Maximum Timeout values for flags waiting loops. These timeouts are not based
    on accurate values, they just guarantee that the application will not remain
-   stuck if the SPI communication is corrupted.
+   stuck if the I2C communication is corrupted.
    You may modify these timeout values depending on CPU frequency and application
    conditions (interrupts routines ...). */
 #define I2Cx_TIMEOUT_MAX 0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
@@ -238,7 +234,8 @@ extern "C"
 #define BMP388_INT1_EXTI_IRQn EXTI2_IRQn
 #define BMP388_INT2_PIN GPIO_PIN_1 /* PB.01 */
 #define BMP388_INT2_EXTI_IRQn EXTI3_IRQn
-    /**
+
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_BUS
      * @}
      */
 
@@ -274,28 +271,19 @@ extern "C"
 #define ACCELERO_INT1_EXTI_IRQn EXTI0_IRQn
 #define ACCELERO_INT2_PIN GPIO_PIN_1 /* PE.01 */
 #define ACCELERO_INT2_EXTI_IRQn EXTI1_IRQn
-/**
- * @}
- */
 
-/*############################### AUDIO ######################################*/
-/**
- * @brief  AUDIO I2C Interface pins
- */
-#define AUDIO_I2C_ADDRESS 0x94
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Constants
+     * @}
+     */
 
-    /* Audio Reset Pin definition */
-#define AUDIO_RESET_GPIO_CLK_ENABLE() __HAL_RCC_GPIOD_CLK_ENABLE()
-#define AUDIO_RESET_PIN GPIO_PIN_4
-#define AUDIO_RESET_GPIO GPIOD
-    /**
+    /**     STM32F4_DISCOVERY_LOW_LEVEL
      * @}
      */
 
     /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_Exported_Macros STM32F4 DISCOVERY LOW LEVEL Exported Macros
      * @{
      */
-    /**
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Macros
      * @}
      */
 
@@ -310,23 +298,15 @@ extern "C"
     void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Mode);
     uint32_t BSP_PB_GetState(Button_TypeDef Button);
 
-    /**
+    /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Functions
      * @}
      */
 
-    /**
+    /**     STM32F4_DISCOVERY
      * @}
      */
 
-    /**
-     * @}
-     */
-
-    /**
-     * @}
-     */
-
-    /**
+    /**     BSP
      * @}
      */
 

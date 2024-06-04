@@ -494,6 +494,9 @@ void BMP388_IO_Read(uint8_t *pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
     /* Send the Address of the indexed register */
     SPI2_WriteRead(ReadAddr);
 
+    /* When reading from the BMP388, the second transaction byte is a dummy byte - see section 5.3.2 */
+    SPI2_WriteRead(ReadAddr);   // read again to increment past the returned dummy byte
+
     /* Receive the data that will be read from the device (MSB First) */
     while (NumByteToRead > 0x00)
     {

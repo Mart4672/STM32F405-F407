@@ -144,6 +144,18 @@ int main(void)
     uart_buf_len = sprintf(uart_buf, "pressureRaw is %d (0x%08x), tempRaw is %d (0x%08x)\r\n", (unsigned int)pressureRaw, (unsigned int)pressureRaw, (unsigned int)tempRaw, (unsigned int)tempRaw);
     HAL_UART_Transmit(&UartHandle, (uint8_t *)uart_buf, uart_buf_len, 100);
 
+    // read calibrated sensor values
+    float pressure = 0.0f;
+    float temp = 0.0f;
+
+    char buf2[100];
+    int len2;
+
+    BMP388_GetCalibratedData(&pressure, &temp);
+
+    len2 = sprintf(buf2, "pressure is %d Pa, temp is (%d/100) C\r\n\n\n", (int) pressure, (int) (temp * 100.f));
+    HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
+
 #ifdef TRANSMITTER_BOARD
     /* Configure KEY Button */
     BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);

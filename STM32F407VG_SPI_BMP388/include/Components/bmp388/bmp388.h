@@ -55,6 +55,29 @@ extern "C"
         uint8_t Data_Ready;     // Data Ready interrupt
     } BMP388_InterruptConfig;
 
+    /* BMP388 Data Calibration struct */
+    typedef struct
+    {
+        // temperature calibration parameters
+        float par_t1;
+        float par_t2;
+        float par_t3;
+        // calibrated temperature
+        float t_lin;
+        // pressure calibration parameters
+        float par_p1;
+        float par_p2;
+        float par_p3;
+        float par_p4;
+        float par_p5;
+        float par_p6;
+        float par_p7;
+        float par_p8;
+        float par_p9;
+        float par_p10;
+        float par_p11;
+    } BMP388_calib_data;
+
     /**   BMP388_Exported_Types
      * @}
      */
@@ -71,6 +94,7 @@ extern "C"
     void BMP388_Soft_Reset(void);
     void BMP388_Teardown(void);
     void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt);
+    void BMP388_GetCalibratedData(float *pressureCalibratedFloat, float *tempCalibratedFloat);
 
     // TODO add function to collect calibration coefficients
     // or update initalize function to collect and save these values <--------

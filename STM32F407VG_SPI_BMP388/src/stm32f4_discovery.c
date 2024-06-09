@@ -242,7 +242,8 @@ void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Mode)
         GPIO_InitStruct.Pin = BUTTON_PIN[Button];
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+        // GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+        GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
         HAL_GPIO_Init(BUTTON_PORT[Button], &GPIO_InitStruct);
 
         /* Enable and set Button EXTI Interrupt to the lowest priority */
@@ -440,15 +441,17 @@ void BMP388_IO_ITConfig(void)
     BMP388_INT_GPIO_CLK_ENABLE();
 
     /* Configure GPIO PINs to detect Interrupts */
-    GPIO_InitStructure.Pin = BMP388_INT1_PIN;
+    GPIO_InitStructure.Pin = BMP388_INT1_PIN; // BMP388_INT1_PIN  
     GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(BMP388_INT_GPIO_PORT, &GPIO_InitStructure);
 
     /* Enable and set INT to the lowest priority */
-    HAL_NVIC_SetPriority((IRQn_Type)BMP388_INT1_EXTI_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ((IRQn_Type)BMP388_INT1_EXTI_IRQn);
+    // HAL_NVIC_SetPriority((IRQn_Type)BMP388_INT1_EXTI_IRQn, 0x0F, 0);
+    // HAL_NVIC_EnableIRQ((IRQn_Type)BMP388_INT1_EXTI_IRQn);
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
 /**

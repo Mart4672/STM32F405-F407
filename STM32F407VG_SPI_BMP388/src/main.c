@@ -42,25 +42,33 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-/* UART handler declaration */
+
+// UART handler declaration
 UART_HandleTypeDef UartHandle;
 
-/* Buffer used for transmission */
+// Buffer used for transmission
 uint8_t aTxBuffer[] = "************** BMP388 SPI COMMUNICATION TEST **************\r\n";
 
-/* Buffer used for reception */
+// Buffer used for reception
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
 SPI_HandleTypeDef SpiHandle;
+
+TIM_HandleTypeDef htim5;
 
 BMP388_InitializationConfig bmp388initConfig;
 
 BMP388_InterruptConfig bmp388interruptConfig;
 
+uint8_t bmp388readData = 0;
+
+uint32_t timer_val;
+
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 static void USART_UART_Init(void);
+static void MX_TIM5_Init(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -90,6 +98,17 @@ int main(void)
     /* Configure the system clock to 168 MHz */
     SystemClock_Config();
 
+    // configure timer 5 (32 bit timer)
+    // see STM32 DS8626 - Section 2.2.21 - Table 4. Timer feature comparison 
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    MX_TIM5_Init();
+    // start timer 5
+    if (HAL_TIM_Base_Start(&htim5) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    // use HAL_TIM_PeriodElapsedCallback with HAL_TIM_Base_Start_IT to run a callback at a specific interval
+
     /*#### Configure the UART peripheral #####################################*/
     USART_UART_Init();
 
@@ -101,7 +120,8 @@ int main(void)
     bmp388initConfig.Sensor_Power_Mode = BMP388_MEASUREMENT_CONFIG_NORMAL_MODE;
     bmp388initConfig.Oversampling_Rate_Pressure = BMP388_PRESSURE_OSR_X16;
     bmp388initConfig.Oversampling_Rate_Temperature = BMP388_TEMPERATURE_OSR_X2;
-    bmp388initConfig.Output_DataRate = BMP388_ODR_25_HZ; // see section 3.9.2 for maximum ODR based on OSR values
+    bmp388initConfig.Output_DataRate = BMP388_ODR_0p1_HZ;
+    // bmp388initConfig.Output_DataRate = BMP388_ODR_25_HZ; // see section 3.9.2 for maximum ODR based on OSR values
     bmp388initConfig.Filter_Setting = BMP388_IIR_FILTER_COEF_3;
 
     BMP388_Initialize(&bmp388initConfig);
@@ -114,7 +134,49 @@ int main(void)
     bmp388interruptConfig.Fifo_Full = BMP388_INTERRUPT_FIFO_FULL_DISABLED;
     bmp388interruptConfig.Data_Ready = BMP388_INTERRUPT_DATA_READY_ENABLED;
 
+    // char buf4[100];
+    // int len4;
+    // len4 = sprintf(buf4, "hello?\r\n\n\n");
+    // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf4, len4, 100);
+
     BMP388_ConfigureInterrupt(&bmp388interruptConfig);
+
+    // HAL_GetTick() should return the number of milliseconds elapsed since startup
+
+    timer_val = __HAL_TIM_GET_COUNTER(&htim5);
+    uint32_t interruptStatusTime = 0;
+    uint8_t interruptStatus = 0;
+    char buf3[100];
+    int len3;
+
+    HAL_Delay(1000);
+
+    len3 = sprintf(buf3, "timer_val is %lu\r\n\n\n", timer_val);
+    HAL_UART_Transmit(&UartHandle, (uint8_t *)buf3, len3, 100);
+
+    while (1)
+    {
+        // read interrupt status task
+        if ((timer_val - interruptStatusTime) >= 1000000)
+        {
+            interruptStatusTime = __HAL_TIM_GET_COUNTER(&htim5);
+
+            interruptStatus = BMP388_ReadIntStatus();
+            if (interruptStatus != 0)
+            {
+                len3 = sprintf(buf3, "%10lu: interrupt status is 0x%02x <---\r\n", timer_val, (int) interruptStatus);
+            }
+            else
+            {
+                len3 = sprintf(buf3, "%10lu: interrupt status is 0x%02x\r\n", timer_val, (int) interruptStatus);
+            }
+
+            HAL_UART_Transmit(&UartHandle, (uint8_t *)buf3, len3, 100);
+        }
+
+        // update timer_val
+        timer_val = __HAL_TIM_GET_COUNTER(&htim5);
+    }
 
     char uart_buf[100];
     int uart_buf_len;
@@ -159,6 +221,7 @@ int main(void)
 #ifdef TRANSMITTER_BOARD
     /* Configure KEY Button */
     BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
+    // BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
 
     /* Wait for USER Button press before starting the Communication */
     while (BSP_PB_GetState(BUTTON_KEY) == RESET)
@@ -188,7 +251,7 @@ int main(void)
     // }
 
     /* Turn LED6 on: Transfer in transmission process is correct */
-    BSP_LED_On(LED6);
+    // BSP_LED_On(LED6);
 
     /*##-3- Put UART peripheral in reception process ###########################*/
     // if(HAL_UART_Receive(&UartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE, 5000) != HAL_OK)
@@ -197,7 +260,7 @@ int main(void)
     // }
 
     /* Turn LED4 on: Transfer in reception process is correct */
-    BSP_LED_On(LED4);
+    // BSP_LED_On(LED4);
 
 #else
 
@@ -257,8 +320,36 @@ int main(void)
         //     Error_Handler();
         // }
 
-        HAL_Delay(5000);
-        BSP_LED_Toggle(LED6);
+        // HAL_Delay(10000);
+        // BSP_LED_Toggle(LED6);
+
+
+
+
+
+
+
+        // if (bmp388readData)
+        // {
+        //     // read the sensor data registers
+        //     BMP388_ReadRawData(&pressureRaw, &tempRaw);
+
+        //     // unset BMP388 read data registers flag
+        //     bmp388readData = 0;
+
+        //     // calibrate raw sensor data
+        //     BMP388_CalibrateRawData(pressureRaw, tempRaw, &pressure, &temp);
+
+        //     // send data over UART
+        //     len2 = sprintf(buf2, "pressure is %d Pa, temp is (%d/100) C\r\n\n\n", (int) pressure, (int) (temp * 100.f));
+        //     HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
+        // }
+
+
+
+
+
+
     }
 }
 
@@ -326,6 +417,78 @@ static void SystemClock_Config(void)
     {
         /* Enable the Flash prefetch */
         __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    }
+}
+
+/**
+  * @brief EXTI line detection callbacks
+  * @param GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    // char buf2[100];
+    // int len2;
+
+    // if (GPIO_Pin == KEY_BUTTON_PIN)
+    // {
+    //     // /* Toggle LED3 */
+    //     // BSP_LED_Toggle(LED3);
+    //     // /* Toggle LED4 */
+    //     // BSP_LED_Toggle(LED4);
+    //     // /* Toggle LED5 */
+    //     // BSP_LED_Toggle(LED5);
+    //     // /* Toggle LED6 */
+    //     BSP_LED_Toggle(LED6);
+
+    //     len2 = sprintf(buf2, "push button callback\r\n\n\n");
+    //     HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
+    // }
+    if (GPIO_Pin == BMP388_INT1_PIN)    //BMP388_INT1_PIN
+    {
+        // HAL_Delay(10);
+
+        /* Toggle LED3 */
+        // BSP_LED_Toggle(LED3);
+        /* Toggle LED4 */
+        BSP_LED_Toggle(LED4);
+        /* Toggle LED5 */
+        // BSP_LED_Toggle(LED5);
+        /* Toggle LED6 */
+        // BSP_LED_Toggle(LED6);
+
+        // HAL_Delay(1000);
+
+        // read INT_STATUS register to de-assert the INT pin
+        // BMP388_ReadIntStatus();
+
+        // set BMP388 read data registers flag
+        bmp388readData = 1;
+
+        // BMP388_ReadRawData(&pressureRawGlobal, &tempRawGlobal);
+
+        // len2 = sprintf(buf2, "BMP388 int pin callback\r\n\n\n");
+        // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
+    }
+}
+
+/**
+ * @brief TIM5 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM5_Init(void)
+{
+    htim5.Instance = TIM5;
+    // set the timer prescaler to PLLN/PLLP
+    htim5.Init.Prescaler = 84 - 1; // (HAL_RCC_GetPCLK1Freq()/2) / 1000000 - 1
+    htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim5.Init.Period = 4294967295;
+    htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+    {
+        Error_Handler();
     }
 }
 

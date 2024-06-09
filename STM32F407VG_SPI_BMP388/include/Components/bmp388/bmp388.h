@@ -89,17 +89,14 @@ extern "C"
     void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig);
     void BMP388_ConfigureInterrupt(BMP388_InterruptConfig *interruptConfig);
     uint8_t BMP388_ReadID(void);
+    uint8_t BMP388_ReadIntStatus(void);
     void BMP388_SetPowerMode(uint8_t powerMode);
     void BMP388_SetDataRate(uint8_t dataRateValue);
     void BMP388_Soft_Reset(void);
     void BMP388_Teardown(void);
     void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt);
     void BMP388_GetCalibratedData(float *pressureCalibratedFloat, float *tempCalibratedFloat);
-
-    // TODO add function to collect calibration coefficients
-    // or update initalize function to collect and save these values <--------
-    // TODO add function to calculate actual pressure and temperature
-    // void BMP88_CalculateTempAndPressure(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt);
+    void BMP388_CalibrateRawData(uint32_t pressureRaw, uint32_t tempRaw, float *pressureCal, float *tempCal);
 
     /**   BMP388_Exported_Functions
      * @}

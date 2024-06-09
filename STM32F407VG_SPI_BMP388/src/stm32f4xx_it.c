@@ -155,7 +155,18 @@ void SysTick_Handler(void)
  */
 void EXTI0_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);  //BMP388_INT1_PIN
+    // HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
+}
+
+/**
+ * @brief  This function handles External line 2 interrupt request.
+ * @param  None
+ * @retval None
+ */
+void EXTI2_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);  //BMP388_INT1_PIN
 }
 
 /**

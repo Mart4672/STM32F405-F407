@@ -203,6 +203,17 @@ uint8_t BMP388_ReadID(void)
     return (uint8_t)tmp;
 }
 
+uint8_t BMP388_ReadIntStatus(void)
+{
+    uint8_t tmp = 0;
+
+    // perform the 3 byte SPI read/write transaction
+    BMP388_IO_Read(&tmp, BMP388_INTERRUPT_STATUS_ADDR, 1);
+
+    // return the interrupt status register value - the third byte of the transaction
+    return (uint8_t)tmp;
+}
+
 /**
  * @brief  Configure Interrupts for the BMP388
  * @param  interruptConfig: pointer to a BMP388_InterruptConfig struct that contains
@@ -405,11 +416,33 @@ void BMP388_GetCalibratedData(float *pressureCalibratedFloat, float *tempCalibra
     uint32_t tempRaw = 0;
     BMP388_ReadRawData(&pressureRaw, &tempRaw);
 
+    // TODO last consolidate this function after BMP388_CalibrateRawData is working
+    // BMP388_CalibrateRawData(pressureRaw, tempRaw, pressureCalibratedFloat, tempCalibratedFloat);
+
     // must compensate temperature first
     tempCalibratedFloat[0] = BMP388_CompensateTemperature(tempRaw, &bmp388Calibration);
 
     // must compensate pressure after temperature
     pressureCalibratedFloat[0] = BMP388_CompensatePressure(pressureRaw, &bmp388Calibration);
+}
+
+/**
+ * @brief Calibrate raw readings from the BMP388 sensor by:
+ * @brief 1. compensating the temperature first
+ * @brief 2. compensating the pressure second
+ *
+ * @note The calibration coefficients must be read and converted to float at startup before this function is called.
+ *
+ * @param pressureCalibratedFloat
+ * @param tempCalibratedFloat
+ */
+void BMP388_CalibrateRawData(uint32_t pressureRaw, uint32_t tempRaw, float *pressureCal, float *tempCal)
+{
+    // must compensate temperature first
+    tempCal[0] = BMP388_CompensateTemperature(tempRaw, &bmp388Calibration);
+
+    // must compensate pressure after temperature
+    pressureCal[0] = BMP388_CompensatePressure(pressureRaw, &bmp388Calibration);
 }
 
 /**     BMP388_Private_Functions

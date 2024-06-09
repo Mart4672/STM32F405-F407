@@ -44,12 +44,7 @@
 
 // UART handler declaration
 UART_HandleTypeDef UartHandle;
-
-// Buffer used for transmission
-uint8_t aTxBuffer[] = "************** BMP388 SPI COMMUNICATION TEST **************\r\n";
-
-// Buffer used for reception
-uint8_t aRxBuffer[RXBUFFERSIZE];
+__IO ITStatus UartReady = RESET;
 
 SPI_HandleTypeDef SpiHandle;
 
@@ -62,6 +57,8 @@ BMP388_InterruptConfig bmp388interruptConfig;
 uint8_t bmp388readData = 0;
 
 uint32_t timer_val;
+
+static const uint8_t waitForUartTransmit = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -176,9 +173,18 @@ int main(void)
         {
             printTime = __HAL_TIM_GET_COUNTER(&htim5);
 
-            // TODO test HAL_UART_TRANSMIT_IT
-            len4 = sprintf(buf4, "[%10lu] # of data reads is %u, pressure is %d Pa, temp is (%d/100) C, total print time is %8lu\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
-            HAL_UART_Transmit(&UartHandle, (uint8_t *)buf4, len4, 150);
+            len4 = snprintf(buf4, 103, "[%10lu] Data reads: %3u, pressure: %6d Pa, temp: (%5d/100) C, print task time: %6lu us\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
+            // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf4, len4, 150);
+            HAL_UART_Transmit_IT(&UartHandle, (uint8_t *)buf4, len4);
+
+            if (waitForUartTransmit)
+            {
+                // wait until the transfer is complete if desired
+                while (UartReady != SET)
+                {
+                }
+                UartReady = RESET;
+            }
 
             numReadDataCalls = 0;
 
@@ -371,6 +377,21 @@ static void USART_UART_Init(void)
     {
         Error_Handler();
     }
+}
+
+/**
+ * @brief  Tx Transfer completed callback
+ * @param  UartHandle: UART handle.
+ * @note   This example shows a simple way to report end of IT Tx transfer, and
+ *         you can add your own implementation.
+ * @retval None
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+    // Set transmission flag: transfer complete
+    UartReady = SET;
+
+    BSP_LED_Toggle(LED6);
 }
 
 /**

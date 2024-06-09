@@ -155,7 +155,7 @@ void SysTick_Handler(void)
  */
 void EXTI0_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);  //BMP388_INT1_PIN
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN); // BMP388_INT1_PIN
     // HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
 }
 
@@ -166,7 +166,7 @@ void EXTI0_IRQHandler(void)
  */
 void EXTI2_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);  //BMP388_INT1_PIN
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN); // BMP388_INT1_PIN
 }
 
 /**

@@ -441,7 +441,7 @@ void BMP388_IO_ITConfig(void)
     BMP388_INT_GPIO_CLK_ENABLE();
 
     /* Configure GPIO PINs to detect Interrupts */
-    GPIO_InitStructure.Pin = BMP388_INT1_PIN; // BMP388_INT1_PIN  
+    GPIO_InitStructure.Pin = BMP388_INT1_PIN; // BMP388_INT1_PIN
     GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
@@ -498,7 +498,7 @@ void BMP388_IO_Read(uint8_t *pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
     SPI2_WriteRead(ReadAddr);
 
     /* When reading from the BMP388, the second transaction byte is a dummy byte - see section 5.3.2 */
-    SPI2_WriteRead(ReadAddr);   // read again to increment past the returned dummy byte
+    SPI2_WriteRead(ReadAddr); // read again to increment past the returned dummy byte
 
     /* Receive the data that will be read from the device (MSB First) */
     while (NumByteToRead > 0x00)

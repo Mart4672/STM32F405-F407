@@ -165,10 +165,9 @@ void USARTx_IRQHandler(void)
  * @param  None
  * @retval None
  */
-void EXTI0_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN); // BMP388_INT1_PIN
-    // HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
+    HAL_GPIO_EXTI_IRQHandler(BMI270_INT1_PIN);
 }
 
 /**
@@ -178,7 +177,7 @@ void EXTI0_IRQHandler(void)
  */
 void EXTI2_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN); // BMP388_INT1_PIN
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);
 }
 
 /**

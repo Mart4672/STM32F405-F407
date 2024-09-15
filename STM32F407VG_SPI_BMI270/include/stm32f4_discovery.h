@@ -53,17 +53,6 @@ extern "C"
         LED6 = 3
     } Led_TypeDef;
 
-    typedef enum
-    {
-        BUTTON_KEY = 0,
-    } Button_TypeDef;
-
-    typedef enum
-    {
-        BUTTON_MODE_GPIO = 0,
-        BUTTON_MODE_EXTI = 1
-    } ButtonMode_TypeDef;
-
     /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Types
      * @}
      */
@@ -134,45 +123,14 @@ extern "C"
      * @}
      */
 
-    /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUTTON STM32F4 DISCOVERY LOW LEVEL BUTTON
-     * @{
-     */
-
-#define BUTTONn 1
-
-/**
- * @brief Wakeup push-button
- */
-#define KEY_BUTTON_PIN GPIO_PIN_0
-#define KEY_BUTTON_GPIO_PORT GPIOA
-#define KEY_BUTTON_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
-#define KEY_BUTTON_GPIO_CLK_DISABLE() __HAL_RCC_GPIOA_CLK_DISABLE()
-#define KEY_BUTTON_EXTI_IRQn EXTI0_IRQn
-
-#define BUTTONx_GPIO_CLK_ENABLE(__INDEX__) \
-    do                                     \
-    {                                      \
-        if ((__INDEX__) == 0)              \
-            KEY_BUTTON_GPIO_CLK_ENABLE();  \
-    } while (0)
-
-#define BUTTONx_GPIO_CLK_DISABLE(__INDEX__) \
-    do                                      \
-    {                                       \
-        if ((__INDEX__) == 0)               \
-            KEY_BUTTON_GPIO_CLK_DISABLE();  \
-    } while (0)
-    /**     STM32F4_DISCOVERY_LOW_LEVEL_BUTTON
-     * @}
-     */
-
     /** @defgroup STM32F4_DISCOVERY_LOW_LEVEL_BUS STM32F4 DISCOVERY LOW LEVEL BUS
      * @{
      */
 
-// USART2
+// UART/USART2
 /*###########################################################################*/
 // Definition for USARTx clock resources
+#define UART2_BAUD_RATE 9600    // 115200, 57600
 #define USARTx USART2
 #define USARTx_CLK_ENABLE() __HAL_RCC_USART2_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -254,11 +212,15 @@ extern "C"
 #define BMI270_INT_GPIO_CLK_DISABLE() __HAL_RCC_GPIOE_CLK_DISABLE()
 
 // other
-#define BMI270_INT1_EXTI_IRQn EXTI0_IRQn
+#define BMI270_INT1_EXTI_IRQn EXTI1_IRQn
 #define BMI270_INT2_PIN GPIO_PIN_1 // PE.01
 #define BMI270_INT2_EXTI_IRQn EXTI1_IRQn
 
-// BMP388 (SPI2)
+    // Link functions for Barometer peripheral
+    void BMI270_IO_Init(void);
+    void BMI270_IO_ITConfig(void);
+
+// BMP388
 /*############################################################################*/
 
 // Read/Write command - perform a read operation when using this command
@@ -289,7 +251,7 @@ extern "C"
 // other
 #define BMP388_INT1_EXTI_IRQn EXTI2_IRQn
 #define BMP388_INT2_PIN GPIO_PIN_1 // PB.01
-#define BMP388_INT2_EXTI_IRQn EXTI3_IRQn
+#define BMP388_INT2_EXTI_IRQn EXTI2_IRQn
 
     /**     STM32F4_DISCOVERY_LOW_LEVEL_BUS
      * @}
@@ -355,8 +317,6 @@ extern "C"
     void BSP_LED_On(Led_TypeDef Led);
     void BSP_LED_Off(Led_TypeDef Led);
     void BSP_LED_Toggle(Led_TypeDef Led);
-    void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Mode);
-    uint32_t BSP_PB_GetState(Button_TypeDef Button);
 
     /**     STM32F4_DISCOVERY_LOW_LEVEL_Exported_Functions
      * @}

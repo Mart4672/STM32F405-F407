@@ -4,6 +4,7 @@
         "main.h": "c",
         "stm32f4_discovery.h": "c",
         "bmp388.h": "c",
-        "stm32f4xx_hal_conf.h": "c"
+        "stm32f4xx_hal_conf.h": "c",
+        "bmi270.h": "c"
     }
 }

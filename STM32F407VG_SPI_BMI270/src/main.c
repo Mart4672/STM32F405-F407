@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
- * @file    STM32F407VG_SPI_BMP388/src/main.c
+ * @file    STM32F407VG_SPI_BMI270/src/main.c
  * @author  Redstone Space Systems
  * @brief   This code shows how to use the STM32F407 (or STM32F405) to read
- * data from the BMP388 barometric pressure sensor using the SPI HAL API
+ * data from the BMI270 barometric pressure sensor using the SPI HAL API
  * and send the data to a connected computer over serial using the UART HAL API
  * @remark STM32CubeF4 examples:
  * https://github.com/STMicroelectronics/STM32CubeF4.git
@@ -46,13 +46,20 @@
 UART_HandleTypeDef UartHandle;
 __IO ITStatus UartReady = RESET;
 
-SPI_HandleTypeDef SpiHandle;
+static SPI_HandleTypeDef hspi1;
+
+// static SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim5;
+
+// TODO add initialization struct(s) for BMI270
+BMI270 imu1;
 
 BMP388_InitializationConfig bmp388initConfig;
 
 BMP388_InterruptConfig bmp388interruptConfig;
+
+uint8_t bmi270readData = 0;
 
 uint8_t bmp388readData = 0;
 
@@ -65,6 +72,9 @@ static void SystemClock_Config(void);
 static void Error_Handler(void);
 static void USART_UART_Init(void);
 static void MX_TIM5_Init(void);
+static void SPI_Init(SPI_HandleTypeDef* hspi);
+// static uint8_t SPI_WriteRead(SPI_HandleTypeDef* hspi, uint8_t Byte);
+// static void SPI_Error(SPI_HandleTypeDef* hspi);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -105,11 +115,27 @@ int main(void)
     }
     // use HAL_TIM_PeriodElapsedCallback with HAL_TIM_Base_Start_IT to run a callback at a specific interval
 
+    // Initialize SPI1
+    hspi1.Instance = SPI1;
+    SPI_Init(&hspi1);
+
+    // Initialize BMI270 IO
+    BMI270_IO_Init();
+
+    // Initialize BMI270 Interrupt
+    BMI270_IO_ITConfig();
+
+    // Set config values for this BMI270 instance
+    // TODO use config struct to set values
+    // or use existing BMI270 struct since that's being passed in anyways?
+    // BMI270_Init();
+
     /*#### Configure the UART peripheral #####################################*/
     USART_UART_Init();
 
     /*#### Configure the BMP388 Device ######################################*/
 
+    // TODO initialize BMP388 with configurable SPI handle
     // initial BMP388 settings to save to the device
     bmp388initConfig.Communication_Mode = BMP388_SERIAL_INTERFACE_4WIRE; // default
     bmp388initConfig.Sensor_Measurement_Mode = BMP388_MEASUREMENT_CONFIG_TEMP_AND_PRESSURE;
@@ -137,7 +163,6 @@ int main(void)
     uint32_t printTime = 0;
     uint32_t totalPrintTime = 0;
     uint32_t interruptStatusTime = 0;
-    // uint8_t interruptStatus = 0;
     float pressure = 0.0f;
     float temp = 0.0f;
     char buf3[100];
@@ -153,8 +178,8 @@ int main(void)
 
     while (1)
     {
-        // read data task
-        if ((bmp388readData == 1) && (timer_val - interruptStatusTime) >= 40000)
+        // read BMP388 data task
+        if ((bmp388readData == 1) && (timer_val - interruptStatusTime) >= READ_BMP388_TASK_PERIOD_MICROSECONDS)
         {
             bmp388readData = 0;
             interruptStatusTime = __HAL_TIM_GET_COUNTER(&htim5);
@@ -169,7 +194,7 @@ int main(void)
         }
 
         // UART print task
-        if ((timer_val - printTime) >= 1000000)
+        if ((timer_val - printTime) >= UART_PRINT_TASK_PERIOD_MICROSECONDS)
         {
             printTime = __HAL_TIM_GET_COUNTER(&htim5);
 
@@ -194,15 +219,6 @@ int main(void)
 
         // update timer_val
         timer_val = __HAL_TIM_GET_COUNTER(&htim5);
-    }
-
-    BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
-    // Wait for USER Button press before starting the Communication
-    while (BSP_PB_GetState(BUTTON_KEY) == RESET)
-    {
-        // Toggle LED3 waiting for user to press button
-        BSP_LED_Toggle(LED3);
-        HAL_Delay(400);
     }
 
     /* Infinite loop */
@@ -285,48 +301,21 @@ static void SystemClock_Config(void)
  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    // char buf2[100];
-    // int len2;
+    if (GPIO_Pin == BMI270_INT1_PIN)
+    {
+        /* Toggle LED5 */
+        BSP_LED_Toggle(LED5);
 
-    // if (GPIO_Pin == KEY_BUTTON_PIN)
-    // {
-    //     // /* Toggle LED3 */
-    //     // BSP_LED_Toggle(LED3);
-    //     // /* Toggle LED4 */
-    //     // BSP_LED_Toggle(LED4);
-    //     // /* Toggle LED5 */
-    //     // BSP_LED_Toggle(LED5);
-    //     // /* Toggle LED6 */
-    //     BSP_LED_Toggle(LED6);
-
-    //     len2 = sprintf(buf2, "push button callback\r\n\n\n");
-    //     HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
-    // }
+        // set BMP388 read data registers flag
+        bmi270readData = 1;
+    }
     if (GPIO_Pin == BMP388_INT1_PIN) // BMP388_INT1_PIN
     {
-        // HAL_Delay(10);
-
-        /* Toggle LED3 */
-        // BSP_LED_Toggle(LED3);
         /* Toggle LED4 */
         BSP_LED_Toggle(LED4);
-        /* Toggle LED5 */
-        // BSP_LED_Toggle(LED5);
-        /* Toggle LED6 */
-        // BSP_LED_Toggle(LED6);
-
-        // HAL_Delay(1000);
-
-        // read INT_STATUS register to de-assert the INT pin
-        // BMP388_ReadIntStatus();
 
         // set BMP388 read data registers flag
         bmp388readData = 1;
-
-        // BMP388_ReadRawData(&pressureRawGlobal, &tempRawGlobal);
-
-        // len2 = sprintf(buf2, "BMP388 int pin callback\r\n\n\n");
-        // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf2, len2, 100);
     }
 }
 
@@ -351,6 +340,63 @@ static void MX_TIM5_Init(void)
 }
 
 /**
+ * @brief  SPI Initialization Function
+ */
+static void SPI_Init(SPI_HandleTypeDef* hspi)
+{
+    if (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_RESET)
+    {
+        // Common SPI Configuration
+        hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        hspi->Init.Direction = SPI_DIRECTION_2LINES;
+        hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
+        hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
+        hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+        hspi->Init.CRCPolynomial = 7;
+        hspi->Init.DataSize = SPI_DATASIZE_8BIT;
+        hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
+        hspi->Init.NSS = SPI_NSS_SOFT;
+        hspi->Init.TIMode = SPI_TIMODE_DISABLED;
+        hspi->Init.Mode = SPI_MODE_MASTER;
+
+        // HAL_SPI_Init internally calls HAL_SPI_MspInit in stm32f4xx_hal_msp.c
+        HAL_SPI_Init(hspi);
+    }
+}
+
+/**
+ * @brief  Sends a Byte through the SPI interface and return the Byte received
+ *         from the SPI bus.
+ * @param  Byte: Byte send.
+ * @retval The received byte value
+ */
+// static uint8_t SPI_WriteRead(SPI_HandleTypeDef* hspi, uint8_t Byte)
+// {
+//     uint8_t receivedbyte = 0;
+
+//     /* Send a Byte through the SPI peripheral */
+//     /* Read byte from the SPI bus */
+//     if (HAL_SPI_TransmitReceive(hspi, (uint8_t *)&Byte, (uint8_t *)&receivedbyte, 1, SPIx_TIMEOUT_MAX) != HAL_OK)
+//     {
+//         SPI_Error(hspi);
+//     }
+
+//     return receivedbyte;
+// }
+
+/**
+ * @brief  SPI error treatment function.
+ */
+// static void SPI_Error(SPI_HandleTypeDef* hspi)
+// {
+//     // HAL_SPI_DeInit internally calls HAL_SPI_MspDeInit in stm32f4xx_hal_msp.c
+//     HAL_SPI_DeInit(hspi);
+
+//     // Re-Initialize the SPI communication bus
+//     SPI_Init(hspi);
+// }
+
+/**
  * @brief USART Initialization Function
  * @param None
  * @retval None
@@ -363,10 +409,10 @@ static void USART_UART_Init(void)
         - Word Length = 8 Bits
         - Stop Bit = One Stop bit
         - Parity = None
-        - BaudRate = 9600 baud
+        - BaudRate = 9600 baud (user configurable)
         - Hardware flow control disabled (RTS and CTS signals) */
     UartHandle.Instance = USARTx;
-    UartHandle.Init.BaudRate = 9600; // 115200, 57600
+    UartHandle.Init.BaudRate = UART2_BAUD_RATE;
     UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
     UartHandle.Init.StopBits = UART_STOPBITS_1;
     UartHandle.Init.Parity = UART_PARITY_NONE;
@@ -415,7 +461,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 static void Error_Handler(void)
 {
     /* Turn LED5 on */
-    BSP_LED_On(LED5);
+    BSP_LED_On(LED3);
     while (1)
     {
     }

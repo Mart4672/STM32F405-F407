@@ -59,7 +59,9 @@ BMP388_InitializationConfig bmp388initConfig;
 
 BMP388_InterruptConfig bmp388interruptConfig;
 
-uint8_t bmi270readData = 0;
+uint8_t bmi270readAccel = 0;
+
+uint8_t bmi270readGyro = 0;
 
 uint8_t bmp388readData = 0;
 
@@ -306,8 +308,29 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         /* Toggle LED5 */
         BSP_LED_Toggle(LED5);
 
-        // set BMP388 read data registers flag
-        bmi270readData = 1;
+        // read BMI270 INT_STATUS_1 register
+        uint8_t bmi270IntStatus1Value;
+        uint8_t bmi270ReadSuccess = BMI270_ReadRegister(&imu1, BMI_INT_STATUS_1_ADDR, &bmi270IntStatus1Value);
+        if (bmi270ReadSuccess != HAL_OK)
+        {
+            Error_Handler();
+        }
+
+        // Check if any data ready interrupt bits are set
+
+        // check INT_STATUS_1 bit 6 - gyroscope data ready interrupt
+        if ((bmi270IntStatus1Value & 0x40))
+        {
+            // Set flag for reading data registers
+            bmi270readGyro = 0;
+        }
+
+        // check INT_STATUS_1 bit 7 - accelerometer data ready interrupt
+        if ((bmi270IntStatus1Value & 0x80))
+        {
+            // Set flag for reading data registers
+            bmi270readAccel = 0;
+        }
     }
     if (GPIO_Pin == BMP388_INT1_PIN) // BMP388_INT1_PIN
     {

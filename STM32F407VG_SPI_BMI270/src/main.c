@@ -52,7 +52,6 @@ static SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim5;
 
-// TODO add initialization struct(s) for BMI270
 BMI270 imu1;
 
 BMP388_InitializationConfig bmp388initConfig;
@@ -128,9 +127,17 @@ int main(void)
     BMI270_IO_ITConfig();
 
     // Set config values for this BMI270 instance
-    // TODO use config struct to set values
-    // or use existing BMI270 struct since that's being passed in anyways?
-    // BMI270_Init();
+    imu1.pwrConf = BMI_PWR_CONF;
+    imu1.pwrCtrl = BMI_PWR_CTRL;
+    imu1.accConf = BMI_ACC_CONF;
+    imu1.accRange = BMI_ACC_RANGE;
+    imu1.gyrConf = BMI_GYR_CONF;
+    imu1.gyrRange = BMI_GYR_RANGE;
+    imu1.int1IOConf = BMI_INT1_IO_CONF;
+    imu1.int1Int2MapData = BMI_INT1_INT2_MAP_DATA;
+    imu1.intLatch = BMI_INT_LATCH;
+
+    // BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
 
     /*#### Configure the UART peripheral #####################################*/
     USART_UART_Init();
@@ -322,14 +329,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         if ((bmi270IntStatus1Value & 0x40))
         {
             // Set flag for reading data registers
-            bmi270readGyro = 0;
+            bmi270readGyro = 1;
         }
 
         // check INT_STATUS_1 bit 7 - accelerometer data ready interrupt
         if ((bmi270IntStatus1Value & 0x80))
         {
             // Set flag for reading data registers
-            bmi270readAccel = 0;
+            bmi270readAccel = 1;
         }
     }
     if (GPIO_Pin == BMP388_INT1_PIN) // BMP388_INT1_PIN

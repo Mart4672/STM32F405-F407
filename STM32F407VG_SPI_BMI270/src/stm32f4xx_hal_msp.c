@@ -100,11 +100,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
         // Disable Peripheral clock
         __HAL_RCC_SPI1_CLK_DISABLE();
 
-        /** SPI2 GPIO Configuration
-        PC2     ------> SPI2_MISO
-        PC3     ------> SPI2_MOSI
-        PB10    ------> SPI2_SCK
-        */
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7);
     }
     if (hspi->Instance == SPI2)
@@ -112,11 +107,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
         // Disable Peripheral clock
         __HAL_RCC_SPI2_CLK_DISABLE();
 
-        /**SPI2 GPIO Configuration
-        PC2     ------> SPI2_MISO
-        PC3     ------> SPI2_MOSI
-        PB10    ------> SPI2_SCK
-        */
         HAL_GPIO_DeInit(GPIOC, GPIO_PIN_2 | GPIO_PIN_3);
 
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);

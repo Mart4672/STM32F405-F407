@@ -307,7 +307,7 @@ void BMP388_IO_ITConfig(void)
     GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(BMP388_INT_GPIO_PORT, &GPIO_InitStructure);
+    HAL_GPIO_Init(BMP388_INT1_GPIO_PORT, &GPIO_InitStructure);
 
     HAL_NVIC_SetPriority(BMP388_INT1_EXTI_IRQn, 3, 0);
     HAL_NVIC_EnableIRQ(BMP388_INT1_EXTI_IRQn);
@@ -412,7 +412,7 @@ void BMI270_IO_ITConfig(void)
     GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(BMI270_INT_GPIO_PORT, &GPIO_InitStructure);
+    HAL_GPIO_Init(BMI270_INT1_GPIO_PORT, &GPIO_InitStructure);
 
     HAL_NVIC_SetPriority((IRQn_Type)BMI270_INT1_EXTI_IRQn, 2, 0);
     HAL_NVIC_EnableIRQ((IRQn_Type)BMI270_INT1_EXTI_IRQn);

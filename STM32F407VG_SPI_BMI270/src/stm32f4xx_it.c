@@ -165,6 +165,16 @@ void USARTx_IRQHandler(void)
  * @param  None
  * @retval None
  */
+void EXTI0_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(BMP388_INT1_PIN);
+}
+
+/**
+ * @brief  This function handles External line 1 interrupt request.
+ * @param  None
+ * @retval None
+ */
 void EXTI1_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(BMI270_INT1_PIN);

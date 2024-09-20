@@ -143,8 +143,6 @@
  *   0x01 - range_2000  - range of +/- 2000°/s (dps), 16.4 LSB/dps
  */
 #define	BMI_GYR_RANGE       ((0x00 << 3) | (0x01))
-// isolate gyro range bits 2 to 0
-#define BMI_GYR_RANGE_2_0   (BMI_GYR_RANGE & 0x07)
 
 /**
  *  BMI270 interrupt 1 IO configuration value
@@ -295,8 +293,17 @@ typedef struct {
 	float gyr_rps[3];
 
     // Configuration values
-    // TODO add config fields so that parameters can be set in main before initializing 
     uint16_t configFileSize;
+    uint8_t pwrConf;
+    uint8_t pwrCtrl;
+    uint8_t accConf;
+    uint8_t accRange;
+    uint8_t gyrConf;
+    uint8_t gyrRange;
+    uint8_t gyrRangeBits2To0;
+    uint8_t int1IOConf;
+    uint8_t int1Int2MapData;
+    uint8_t intLatch;
 } BMI270;
 
 /**

@@ -448,7 +448,11 @@ uint8_t BMI270_Init(BMI270 *imu,
 	imu->chipSelectPinBank 	= chipSelectPinBank;
 	imu->chipSelectPin 		= chipSelectPin;
 
+    // set config file size
     imu->configFileSize = sizeof(bmi270_config_file);   // 8192
+
+    // isolate gyro range bits 2 to 0
+    imu->gyrRangeBits2To0 = imu->gyrRange & 0x07;
 
 	// Clear DMA flags
 	imu->readingAcc = 0;
@@ -479,7 +483,7 @@ uint8_t BMI270_Init(BMI270 *imu,
     // ########################################################################
 
 	// disable advanced power save mode
-	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, BMI_PWR_CONF);
+	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
 	HAL_Delay(10);
 
     // prepare configuration load
@@ -522,44 +526,46 @@ uint8_t BMI270_Init(BMI270 *imu,
     // ########################################################################
 
 	// Enable gyroscope, accelerometer, and temp sensor 
-	status += BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, BMI_PWR_CTRL);
+	status += BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, imu->pwrCtrl);
 	HAL_Delay(10);
 
 	// Configure accelerometer 
-	status += BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, BMI_ACC_CONF);
+	status += BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, imu->accConf);
 	HAL_Delay(10);
-	status += BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, BMI_ACC_RANGE);
+	status += BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, imu->accRange);
 	HAL_Delay(10);
 
 	// Configure gyroscope
-	status += BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, BMI_GYR_CONF);
+	status += BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, imu->gyrConf);
 	HAL_Delay(10);
-	status += BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, BMI_GYR_RANGE);
+	status += BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, imu->gyrRange);
 	HAL_Delay(10);
 
 	// Enable interrupt pin INT1
-	status += BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, BMI_INT1_IO_CONF);
+	status += BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, imu->int1IOConf);
 	HAL_Delay(10);
 
     // Map INT1 to data ready interrupt (applies for Accel and Gyro readings)
-	status += BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, BMI_INT1_INT2_MAP_DATA);
+	status += BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, imu->int1Int2MapData);
 	HAL_Delay(10);
 
     // Disable Latching 
-	status += BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, BMI_INT_LATCH);
+	status += BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, imu->intLatch);
 	HAL_Delay(10);
 
 	// ensure advanced power save mode is disabled (should already be)
-	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, BMI_PWR_CONF);
+	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
 	HAL_Delay(10);
+
+    // ########################################################################
 
 	// Pre-compute accelerometer conversion constant (raw to m/s^2)
     // with the 2g range option, the conversion factor is 16384 LSB per g
-	imu->accConversion = EARTH_G_TO_METER_PER_SECOND * (pow(2.0f, BMI_ACC_RANGE + 1) / (2.0f * 16384.0f));
+	imu->accConversion = EARTH_G_TO_METER_PER_SECOND * (pow(2.0f, imu->accRange + 1) / (2.0f * 16384.0f));
 
 	// Pre-compute gyroscope conversion constant (raw to rad/s)
     // with the 2000°/s (dps) range option, the conversion factor is 16384 LSB per dps
-    imu->gyrConversion = DEGREES_TO_RADIANS * (1000 * 2.0f / (16384.0f * pow(2.0f, BMI_GYR_RANGE_2_0 + 1)));
+    imu->gyrConversion = DEGREES_TO_RADIANS * (1000 * 2.0f / (16384.0f * pow(2.0f, imu->gyrRangeBits2To0 + 1)));
 
 	// Set accelerometer TX buffer for DMA
 	imu->accTxBuf[0] = BMI_ACC_DATA_ADDR | 0x80;

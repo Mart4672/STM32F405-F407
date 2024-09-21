@@ -6,6 +6,7 @@
 // Conversion defines
 #define EARTH_G_TO_METER_PER_SECOND 9.81f
 #define DEGREES_TO_RADIANS 0.01745329251f
+#define RADIANS_TO_DEGREES 57.29577951f
 
 // Register defines
 
@@ -310,13 +311,12 @@ typedef struct {
  * @brief Initializes a BMI270 IMU with the specified parameters.
  * SPI parameters are stored and the SPI is activated for the sensor.
  * The accelerometer and gyroscope are configured for use.
- * An interrupt pin is also configured. 
- * A nonzero value is returned if any register transactions failed.
+ * An interrupt pin is also configured.
  * @param imu BMI270 struct that stores instance-specific data
  * @param spiHandle SPI handle for the specific BMI270 being used
  * @param chipSelectPinBank chip select bank for the BMI270 in use
  * @param chipSelectPin chip select pin for the BMI270 being used 
- * @return uint8_t
+ * @return uint8_t (1 on success)
  */
 uint8_t BMI270_Init(BMI270 *imu,
 				 SPI_HandleTypeDef *spiHandle,
@@ -330,7 +330,7 @@ uint8_t BMI270_Init(BMI270 *imu,
  * @param imu BMI270 struct
  * @param regAddr BMI270 register address to read
  * @param data pointer to store the read data with
- * @return uint8_t (nonzero if any register transactions fail)
+ * @return uint8_t (1 on success)
  */
 uint8_t BMI270_ReadRegister(BMI270 *imu, uint8_t regAddr, uint8_t *data);
 
@@ -342,7 +342,7 @@ uint8_t BMI270_ReadRegister(BMI270 *imu, uint8_t regAddr, uint8_t *data);
  * @param imu BMI270 struct
  * @param regAddr BMI270 register address to write to
  * @param data pointer to store the data to write
- * @return uint8_t (nonzero if any register transactions fail)
+ * @return uint8_t (1 on success)
  */
 uint8_t BMI270_WriteRegister(BMI270 *imu, uint8_t regAddr, uint8_t data);
 
@@ -352,7 +352,7 @@ uint8_t BMI270_WriteRegister(BMI270 *imu, uint8_t regAddr, uint8_t data);
  * @brief High level Polling function to gets x/y/z accelerations in m/s^2
  * 
  * @param imu BMI270 struct
- * @return uint8_t (nonzero if any register transactions fail)
+ * @return uint8_t (1 on success)
  */
 uint8_t BMI270_ReadAccelerometer(BMI270 *imu);
 
@@ -360,7 +360,7 @@ uint8_t BMI270_ReadAccelerometer(BMI270 *imu);
  * @brief High level Polling function to gets x/y/z angular rates in rad/s
  * 
  * @param imu BMI270 struct
- * @return uint8_t (nonzero if any register transactions fail)
+ * @return uint8_t (1 on success)
  */
 uint8_t BMI270_ReadGyroscope(BMI270 *imu);
 

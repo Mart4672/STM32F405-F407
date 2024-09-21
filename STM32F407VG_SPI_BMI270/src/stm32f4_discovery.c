@@ -398,7 +398,6 @@ void BMI270_IO_Init(void)
 
 /**
  * @brief  Configures the BMI270 IO Interrupts.
- *         EXTI0 is already used by user button so INT1 is not configured here.
  */
 void BMI270_IO_ITConfig(void)
 {

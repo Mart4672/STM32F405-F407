@@ -458,20 +458,20 @@ uint8_t BMI270_Init(BMI270 *imu,
 	imu->readingAcc = 0;
 	imu->readingGyr = 0;
 
-	uint8_t status = 0;
+	uint8_t status = 1;
 
     // Activate SPI Bus
     // ########################################################################
 
 	// BMI270 requires rising edge on Chip Select at start-up to activate SPI
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	HAL_Delay(1);
+	HAL_Delay(10);
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 	HAL_Delay(50);
 
 	// Check chip ID
 	uint8_t chipID;
-	status += BMI270_ReadRegister(imu, BMI270_CHIP_ID_ADDR, &chipID);
+	status &= BMI270_ReadRegister(imu, BMI270_CHIP_ID_ADDR, &chipID);
 
 	if (chipID != BMI270_CHIP_ID) 
     {
@@ -483,11 +483,12 @@ uint8_t BMI270_Init(BMI270 *imu,
     // ########################################################################
 
 	// disable advanced power save mode
-	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
+	status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
 	HAL_Delay(10);
 
     // prepare configuration load
-	status += BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_PREPARE);
+    // This operation must NOT be performed more than once after POR or soft reset
+	status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_PREPARE);
 	HAL_Delay(10);
 
     // create tx buffer to send the correct initialization data address to the sensor
@@ -495,20 +496,21 @@ uint8_t BMI270_Init(BMI270 *imu,
 
     // block write the config file
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-    status += (HAL_SPI_Transmit(imu->spiHandle, txBuf, 1, HAL_MAX_DELAY) == HAL_OK);
-	status += (HAL_SPI_Transmit(imu->spiHandle, (uint8_t*) bmi270_config_file, imu->configFileSize, HAL_MAX_DELAY) == HAL_OK);
+    status &= (HAL_SPI_Transmit(imu->spiHandle, txBuf, 1, HAL_MAX_DELAY) == HAL_OK);
+	status &= (HAL_SPI_Transmit(imu->spiHandle, (uint8_t*) bmi270_config_file, imu->configFileSize, HAL_MAX_DELAY) == HAL_OK);
 	while(HAL_SPI_GetState(imu->spiHandle) != HAL_SPI_STATE_READY);
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
     // can optionally block read the 8192 configuration file Bytes in from BMI_INIT_DATA_ADDR and compare to bmi270_config_file for correctness
 
     // complete configuration load
-	status += BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_COMPLETE);
+	status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_COMPLETE);
 	HAL_Delay(20);
+    HAL_Delay(10);
 
     // Check if INTERNAL_STATUS.message has the "init_ok" value of 0x01
     uint8_t internalStatusMessage;
-    status += BMI270_ReadRegister(imu, BMI_INTERNAL_STATUS_ADDR, &internalStatusMessage);
+    status &= BMI270_ReadRegister(imu, BMI_INTERNAL_STATUS_ADDR, &internalStatusMessage);
 
     // isolate message bits 3 to 0
     internalStatusMessage = (internalStatusMessage & 0x0F);
@@ -526,35 +528,35 @@ uint8_t BMI270_Init(BMI270 *imu,
     // ########################################################################
 
 	// Enable gyroscope, accelerometer, and temp sensor 
-	status += BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, imu->pwrCtrl);
+	status &= BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, imu->pwrCtrl);
 	HAL_Delay(10);
 
 	// Configure accelerometer 
-	status += BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, imu->accConf);
+	status &= BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, imu->accConf);
 	HAL_Delay(10);
-	status += BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, imu->accRange);
+	status &= BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, imu->accRange);
 	HAL_Delay(10);
 
 	// Configure gyroscope
-	status += BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, imu->gyrConf);
+	status &= BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, imu->gyrConf);
 	HAL_Delay(10);
-	status += BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, imu->gyrRange);
+	status &= BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, imu->gyrRange);
 	HAL_Delay(10);
 
 	// Enable interrupt pin INT1
-	status += BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, imu->int1IOConf);
+	status &= BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, imu->int1IOConf);
 	HAL_Delay(10);
 
     // Map INT1 to data ready interrupt (applies for Accel and Gyro readings)
-	status += BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, imu->int1Int2MapData);
+	status &= BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, imu->int1Int2MapData);
 	HAL_Delay(10);
 
     // Disable Latching 
-	status += BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, imu->intLatch);
+	status &= BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, imu->intLatch);
 	HAL_Delay(10);
 
 	// ensure advanced power save mode is disabled (should already be)
-	status += BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
+	status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
 	HAL_Delay(10);
 
     // ########################################################################
@@ -636,13 +638,13 @@ uint8_t BMI270_ReadGyroscope(BMI270 *imu)
 	uint8_t rxBuf[8];
 
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 7, HAL_MAX_DELAY) == HAL_OK);
+	uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 8, HAL_MAX_DELAY) == HAL_OK);
 	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
 	// Form signed 16-bit integers
-	int16_t gyrX = (int16_t) ((rxBuf[2] << 8) | rxBuf[1]);
-	int16_t gyrY = (int16_t) ((rxBuf[4] << 8) | rxBuf[3]);
-	int16_t gyrZ = (int16_t) ((rxBuf[6] << 8) | rxBuf[5]);
+	int16_t gyrX = (int16_t) ((rxBuf[3] << 8) | rxBuf[2]);
+	int16_t gyrY = (int16_t) ((rxBuf[5] << 8) | rxBuf[4]);
+	int16_t gyrZ = (int16_t) ((rxBuf[7] << 8) | rxBuf[6]);
 
 	// Convert to rad/s
 	imu->gyr_rps[0] = imu->gyrConversion * gyrX;

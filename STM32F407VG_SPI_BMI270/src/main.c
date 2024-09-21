@@ -60,6 +60,8 @@ BMP388_InterruptConfig bmp388interruptConfig;
 
 uint8_t bmi270readAccel = 0;
 
+uint8_t bmi270reset = 0;
+
 uint8_t bmi270readGyro = 0;
 
 uint8_t bmp388readData = 0;
@@ -120,11 +122,8 @@ int main(void)
     hspi1.Instance = SPI1;
     SPI_Init(&hspi1);
 
-    // Initialize BMI270 IO
+    // Initialize BMI270 Chip Select
     BMI270_IO_Init();
-
-    // Initialize BMI270 Interrupt
-    BMI270_IO_ITConfig();
 
     // Set config values for this BMI270 instance
     imu1.pwrConf = BMI_PWR_CONF;
@@ -137,10 +136,30 @@ int main(void)
     imu1.int1Int2MapData = BMI_INT1_INT2_MAP_DATA;
     imu1.intLatch = BMI_INT_LATCH;
 
-    // BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
+    uint8_t initializationSuccessImu1 = 1;
+    initializationSuccessImu1 = BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
+
+    if (!initializationSuccessImu1)
+    {
+        // softreset the imu
+        BMI270_WriteRegister(&imu1, BMI_CMD_ADDR, BMI_CMD_SOFTRESET);
+        HAL_Delay(50);
+        // try to initialize the device again
+        initializationSuccessImu1 = BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
+    }
+
+    HAL_Delay(50);
+
+    // Initialize BMI270 Interrupt Pin
+    BMI270_IO_ITConfig();
 
     /*#### Configure the UART peripheral #####################################*/
     USART_UART_Init();
+
+    char buf1[100];
+    int len1;
+    len1 = sprintf(buf1, "BMI270_Init returned %u\r\n\n\n", initializationSuccessImu1);
+    HAL_UART_Transmit(&UartHandle, (uint8_t *)buf1, len1, 100);
 
     /*#### Configure the BMP388 Device ######################################*/
 
@@ -172,6 +191,8 @@ int main(void)
     uint32_t printTime = 0;
     uint32_t totalPrintTime = 0;
     uint32_t interruptStatusTime = 0;
+    uint32_t imu1AccelTime = 0;
+    uint32_t imu1GyroTime = 0;
     float pressure = 0.0f;
     float temp = 0.0f;
     char buf3[100];
@@ -179,6 +200,9 @@ int main(void)
     char buf4[150];
     int len4;
     uint16_t numReadDataCalls = 0;
+    uint16_t numAccelReadDataCalls = 0;
+    uint32_t bmiResetCount = 0;
+    uint16_t numGyroReadDataCalls = 0;
 
     HAL_Delay(1000);
 
@@ -187,6 +211,46 @@ int main(void)
 
     while (1)
     {
+        // BMI270 reset task
+        if (bmi270reset)
+        {
+            bmi270reset = 0;
+            HAL_NVIC_DisableIRQ((IRQn_Type)BMI270_INT1_EXTI_IRQn);
+
+            // softreset the imu
+            BMI270_WriteRegister(&imu1, BMI_CMD_ADDR, BMI_CMD_SOFTRESET);
+            HAL_Delay(1);
+            // try to initialize the device again
+            initializationSuccessImu1 = BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
+
+            HAL_NVIC_EnableIRQ((IRQn_Type)BMI270_INT1_EXTI_IRQn);
+            bmiResetCount++;
+        }
+
+        // read BMI270 accelerometer data task
+        if ((bmi270readAccel == 1) && (timer_val - imu1AccelTime) >= READ_BMI270_ACCEL_TASK_PERIOD_MICROSECONDS)
+        {
+            bmi270readAccel = 0;
+            imu1AccelTime = __HAL_TIM_GET_COUNTER(&htim5);
+
+            // read calibrated sensor values
+            BMI270_ReadAccelerometer(&imu1);
+
+            numAccelReadDataCalls++;
+        }
+
+        // read BMI270 gyroscope data task
+        if ((bmi270readGyro == 1) && (timer_val - imu1GyroTime) >= READ_BMI270_GYRO_TASK_PERIOD_MICROSECONDS)
+        {
+            bmi270readGyro = 0;
+            imu1GyroTime = __HAL_TIM_GET_COUNTER(&htim5);
+
+            // read calibrated sensor values
+            BMI270_ReadGyroscope(&imu1);
+
+            numGyroReadDataCalls++;
+        }
+
         // read BMP388 data task
         if ((bmp388readData == 1) && (timer_val - interruptStatusTime) >= READ_BMP388_TASK_PERIOD_MICROSECONDS)
         {
@@ -207,7 +271,8 @@ int main(void)
         {
             printTime = __HAL_TIM_GET_COUNTER(&htim5);
 
-            len4 = snprintf(buf4, 103, "[%10lu] Data reads: %3u, pressure: %6d Pa, temp: (%5d/100) C, print task time: %6lu us\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
+            // len4 = snprintf(buf4, 103, "[%10lu] Data reads: %3u, pressure: %6d Pa, temp: (%5d/100) C, print task time: %6lu us\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
+            len4 = snprintf(buf4, 145, "[%04lus]\r\n[Accel] Reads: %3u, x/y/z: %3d/%3d/%3d m/s/10\r\n[Gyro] Reads: %3u, x/y/z: %5d/%5d/%5d deg/s, resets: %lu, printT: %5lu us\r\n", timer_val/1000000, numAccelReadDataCalls, (int)(imu1.acc_mps2[0] * 10.f), (int)(imu1.acc_mps2[1] * 10.f), (int)(imu1.acc_mps2[2] * 10.f), numGyroReadDataCalls, (int)(imu1.gyr_rps[0] * RADIANS_TO_DEGREES), (int)(imu1.gyr_rps[1] * RADIANS_TO_DEGREES), (int)(imu1.gyr_rps[2] * RADIANS_TO_DEGREES), bmiResetCount, totalPrintTime);
             // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf4, len4, 150);
             HAL_UART_Transmit_IT(&UartHandle, (uint8_t *)buf4, len4);
 
@@ -221,6 +286,8 @@ int main(void)
             }
 
             numReadDataCalls = 0;
+            numAccelReadDataCalls = 0;
+            numGyroReadDataCalls = 0;
 
             // time for UART Task to run
             totalPrintTime = __HAL_TIM_GET_COUNTER(&htim5) - printTime;
@@ -318,9 +385,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         // read BMI270 INT_STATUS_1 register
         uint8_t bmi270IntStatus1Value;
         uint8_t bmi270ReadSuccess = BMI270_ReadRegister(&imu1, BMI_INT_STATUS_1_ADDR, &bmi270IntStatus1Value);
-        if (bmi270ReadSuccess != HAL_OK)
+        if (!bmi270ReadSuccess)
         {
-            Error_Handler();
+            // Try restting the BMI
+            // bmi270reset = 1;
+            // Error_Handler();
         }
 
         // Check if any data ready interrupt bits are set
@@ -490,7 +559,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
  */
 static void Error_Handler(void)
 {
-    /* Turn LED5 on */
     BSP_LED_On(LED3);
     while (1)
     {

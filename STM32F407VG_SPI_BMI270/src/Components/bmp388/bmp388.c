@@ -87,7 +87,7 @@ BMP388_calib_data bmp388Calibration;
  * @param  initializationConfig: struct containing BMP388 init parameters
  * @retval None
  */
-void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig)
+void BMP388_Initialize(BMP388_InitializationConfig* initializationConfig)
 {
     /* Configure the low level interface */
     BMP388_IO_Init();
@@ -96,15 +96,15 @@ void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig)
     BMP388_IO_Write(&(initializationConfig->Communication_Mode), BMP388_SERIAL_INTERFACE_CONFIG_ADDR, 1);
 
     /* Configure BMP388 sensor measurement mode */
-    uint8_t pwrConfig = initializationConfig->Sensor_Measurement_Mode;
-    uint8_t measusurementConfig = initializationConfig->Sensor_Power_Mode;
+    uint8_t pwrConfig            = initializationConfig->Sensor_Measurement_Mode;
+    uint8_t measusurementConfig  = initializationConfig->Sensor_Power_Mode;
     uint8_t pwrMeasurementConfig = pwrConfig | measusurementConfig;
     BMP388_IO_Write(&pwrMeasurementConfig, BMP388_MEASUREMENT_CONFIG_ADDR, 1);
 
     /* Configure BMP388 oversampling mode */
     uint8_t pressureOSR = initializationConfig->Oversampling_Rate_Pressure;
-    uint8_t tempOSR = initializationConfig->Oversampling_Rate_Temperature;
-    uint8_t osrConfig = pressureOSR | tempOSR;
+    uint8_t tempOSR     = initializationConfig->Oversampling_Rate_Temperature;
+    uint8_t osrConfig   = pressureOSR | tempOSR;
     BMP388_IO_Write(&osrConfig, BMP388_OVERSAMPLING_CONFIG_ADDR, 1);
 
     /* Configure BMP388 output data rate */
@@ -116,61 +116,61 @@ void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig)
     /* Read the NVM calibration parameters */
     uint8_t parBuf[2];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_T1_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_T1_7_0_ADDR, 2);
     nvm_par_t1 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_T2_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_T2_7_0_ADDR, 2);
     nvm_par_t2 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_T3_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_T3_7_0_ADDR, 1);
     nvm_par_t3 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P1_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P1_7_0_ADDR, 2);
     nvm_par_p1 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P2_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P2_7_0_ADDR, 2);
     nvm_par_p2 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P3_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P3_7_0_ADDR, 1);
     nvm_par_p3 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P4_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P4_7_0_ADDR, 1);
     nvm_par_p4 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P5_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P5_7_0_ADDR, 2);
     nvm_par_p5 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P6_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P6_7_0_ADDR, 2);
     nvm_par_p6 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P7_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P7_7_0_ADDR, 1);
     nvm_par_p7 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P8_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P8_7_0_ADDR, 1);
     nvm_par_p8 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P9_7_0_ADDR, 2);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P9_7_0_ADDR, 2);
     nvm_par_p9 = (parBuf[1] << 8) + parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P10_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P10_7_0_ADDR, 1);
     nvm_par_p10 = parBuf[0];
 
-    BMP388_IO_Read((uint8_t *)&parBuf, BMP388_NVM_PAR_P11_7_0_ADDR, 1);
+    BMP388_IO_Read((uint8_t*)&parBuf, BMP388_NVM_PAR_P11_7_0_ADDR, 1);
     nvm_par_p11 = parBuf[0];
 
     /* Save the calibration parameters for later */
-    bmp388Calibration.par_t1 = ((float)nvm_par_t1) / 0.00390625f;
-    bmp388Calibration.par_t2 = ((float)nvm_par_t2) / 1073741824.0f;
-    bmp388Calibration.par_t3 = ((float)nvm_par_t3) / 281474976710656.0f;
-    bmp388Calibration.par_p1 = ((float)(nvm_par_p1 - 16384)) / 1048576.0f;
-    bmp388Calibration.par_p2 = ((float)(nvm_par_p2 - 16384)) / 536870912.0f;
-    bmp388Calibration.par_p3 = ((float)nvm_par_p3) / 4294967296.0f;
-    bmp388Calibration.par_p4 = ((float)nvm_par_p4) / 137438953472.0f;
-    bmp388Calibration.par_p5 = ((float)nvm_par_p5) / 0.125f;
-    bmp388Calibration.par_p6 = ((float)nvm_par_p6) / 64.0f;
-    bmp388Calibration.par_p7 = ((float)nvm_par_p7) / 256.0f;
-    bmp388Calibration.par_p8 = ((float)nvm_par_p8) / 32768.0f;
-    bmp388Calibration.par_p9 = ((float)nvm_par_p9) / 281474976710656.0f;
+    bmp388Calibration.par_t1  = ((float)nvm_par_t1) / 0.00390625f;
+    bmp388Calibration.par_t2  = ((float)nvm_par_t2) / 1073741824.0f;
+    bmp388Calibration.par_t3  = ((float)nvm_par_t3) / 281474976710656.0f;
+    bmp388Calibration.par_p1  = ((float)(nvm_par_p1 - 16384)) / 1048576.0f;
+    bmp388Calibration.par_p2  = ((float)(nvm_par_p2 - 16384)) / 536870912.0f;
+    bmp388Calibration.par_p3  = ((float)nvm_par_p3) / 4294967296.0f;
+    bmp388Calibration.par_p4  = ((float)nvm_par_p4) / 137438953472.0f;
+    bmp388Calibration.par_p5  = ((float)nvm_par_p5) / 0.125f;
+    bmp388Calibration.par_p6  = ((float)nvm_par_p6) / 64.0f;
+    bmp388Calibration.par_p7  = ((float)nvm_par_p7) / 256.0f;
+    bmp388Calibration.par_p8  = ((float)nvm_par_p8) / 32768.0f;
+    bmp388Calibration.par_p9  = ((float)nvm_par_p9) / 281474976710656.0f;
     bmp388Calibration.par_p10 = ((float)nvm_par_p10) / 281474976710656.0f;
     bmp388Calibration.par_p11 = ((float)nvm_par_p11) / 36893488147419103232.0f;
 }
@@ -180,9 +180,7 @@ void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig)
  * @param  None
  * @retval None.
  */
-void BMP388_Teardown(void)
-{
-}
+void BMP388_Teardown(void) {}
 
 /**
  * @brief  Read the BMP388 device ID.
@@ -220,18 +218,18 @@ uint8_t BMP388_ReadIntStatus(void)
  * the configurations settings for the BMP388 Interrupt.
  * @retval None
  */
-void BMP388_ConfigureInterrupt(BMP388_InterruptConfig *interruptConfig)
+void BMP388_ConfigureInterrupt(BMP388_InterruptConfig* interruptConfig)
 {
     /* Configure the device Interrupt IO pin */
     BMP388_IO_ITConfig();
 
     /* Configure interrupt settings */
-    uint8_t outputType = interruptConfig->Output_Type;
-    uint8_t activeLevel = interruptConfig->Active_Level;
-    uint8_t latching = interruptConfig->Latching;
-    uint8_t fifoWatermark = interruptConfig->Fifo_Watermark;
-    uint8_t fifoFull = interruptConfig->Fifo_Full;
-    uint8_t dataReady = interruptConfig->Data_Ready;
+    uint8_t outputType              = interruptConfig->Output_Type;
+    uint8_t activeLevel             = interruptConfig->Active_Level;
+    uint8_t latching                = interruptConfig->Latching;
+    uint8_t fifoWatermark           = interruptConfig->Fifo_Watermark;
+    uint8_t fifoFull                = interruptConfig->Fifo_Full;
+    uint8_t dataReady               = interruptConfig->Data_Ready;
     uint8_t interruptRegisterConfig = outputType | activeLevel | latching | fifoWatermark | fifoFull | dataReady;
     BMP388_IO_Write(&interruptRegisterConfig, BMP388_INTERRUPT_CONFIG_ADDR, 1);
 }
@@ -315,7 +313,7 @@ void BMP388_Soft_Reset(void)
  * @note 24 bit UNSIGNED format for pressure and temp
  * @retval None
  */
-void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt)
+void BMP388_ReadRawData(uint32_t* pressureUnsignedInt, uint32_t* tempUnsignedInt)
 {
     // These 6 registers will be read: (3 pressure and 3 temperature)
     // BMP388_DATA_0_PRESS_7_0, BMP388_DATA_1_PRESS_15_8, BMP388_DATA_2_PRESS_23_16
@@ -325,22 +323,24 @@ void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt
 
     // burst read so that data register shadowing (3.10.1) can ensure
     // data consistency - i.e. no register overwriting while reading
-    BMP388_IO_Read((uint8_t *)&buffer, BMP388_DATA_0_PRESS_7_0, 6);
+    BMP388_IO_Read((uint8_t*)&buffer, BMP388_DATA_0_PRESS_7_0, 6);
 
     // set data values from buffer
     pressureUnsignedInt[0] = (buffer[2] << 16) + (buffer[1] << 8) + buffer[0];
-    tempUnsignedInt[0] = (buffer[5] << 16) + (buffer[4] << 8) + buffer[3];
+    tempUnsignedInt[0]     = (buffer[5] << 16) + (buffer[4] << 8) + buffer[3];
 }
 
 /**
  * @brief Compensate a BMP388 raw temperature reading to get a calibrated temperature reading.
- * The calibration coefficients vary by chip, so they must be read and converted to float at startup before this function is called.
+ * The calibration coefficients vary by chip, so they must be read and converted to float at startup before this
+ * function is called.
  *
  * @param uncomp_temp raw 32 bit unsigned temperature reading from the BMP388_ReadRawData function
- * @param calib_data BMP388_calib_data struct that contains the calibration parameters as floats as well as the calibrated temperature
+ * @param calib_data BMP388_calib_data struct that contains the calibration parameters as floats as well as the
+ * calibrated temperature
  * @return float
  */
-static float BMP388_CompensateTemperature(uint32_t uncomp_temp, BMP388_calib_data *calib_data)
+static float BMP388_CompensateTemperature(uint32_t uncomp_temp, BMP388_calib_data* calib_data)
 {
     float partial_data1;
     float partial_data2;
@@ -357,13 +357,15 @@ static float BMP388_CompensateTemperature(uint32_t uncomp_temp, BMP388_calib_dat
 
 /**
  * @brief Compensate a BMP388 raw pressure reading to get a calibrated temperature reading.
- * The calibration coefficients vary by chip, so they must be read and converted to float at startup before this function is called.
+ * The calibration coefficients vary by chip, so they must be read and converted to float at startup before this
+ * function is called.
  *
  * @param uncomp_press raw 32 bit unsigned pressure reading from the BMP388_ReadRawData function
- * @param calib_data BMP388_calib_data struct that contains the calibration parameters as floats as well as the calibrated temperature
+ * @param calib_data BMP388_calib_data struct that contains the calibration parameters as floats as well as the
+ * calibrated temperature
  * @return float
  */
-static float BMP388_CompensatePressure(uint32_t uncomp_press, BMP388_calib_data *calib_data)
+static float BMP388_CompensatePressure(uint32_t uncomp_press, BMP388_calib_data* calib_data)
 {
     /* Variable to store the compensated pressure */
     float comp_press;
@@ -381,17 +383,18 @@ static float BMP388_CompensatePressure(uint32_t uncomp_press, BMP388_calib_data 
     partial_data1 = calib_data->par_p6 * calib_data->t_lin;
     partial_data2 = calib_data->par_p7 * (calib_data->t_lin * calib_data->t_lin);
     partial_data3 = calib_data->par_p8 * (calib_data->t_lin * calib_data->t_lin * calib_data->t_lin);
-    partial_out1 = calib_data->par_p5 + partial_data1 + partial_data2 + partial_data3;
+    partial_out1  = calib_data->par_p5 + partial_data1 + partial_data2 + partial_data3;
 
     partial_data1 = calib_data->par_p2 * calib_data->t_lin;
     partial_data2 = calib_data->par_p3 * (calib_data->t_lin * calib_data->t_lin);
     partial_data3 = calib_data->par_p4 * (calib_data->t_lin * calib_data->t_lin * calib_data->t_lin);
-    partial_out2 = (float)uncomp_press * (calib_data->par_p1 + partial_data1 + partial_data2 + partial_data3);
+    partial_out2  = (float)uncomp_press * (calib_data->par_p1 + partial_data1 + partial_data2 + partial_data3);
 
     partial_data1 = (float)uncomp_press * (float)uncomp_press;
     partial_data2 = calib_data->par_p9 + calib_data->par_p10 * calib_data->t_lin;
     partial_data3 = partial_data1 * partial_data2;
-    partial_data4 = partial_data3 + ((float)uncomp_press * (float)uncomp_press * (float)uncomp_press) * calib_data->par_p11;
+    partial_data4 =
+        partial_data3 + ((float)uncomp_press * (float)uncomp_press * (float)uncomp_press) * calib_data->par_p11;
 
     comp_press = partial_out1 + partial_out2 + partial_data4;
 
@@ -409,11 +412,11 @@ static float BMP388_CompensatePressure(uint32_t uncomp_press, BMP388_calib_data 
  * @param pressureCalibratedFloat
  * @param tempCalibratedFloat
  */
-void BMP388_GetCalibratedData(float *pressureCalibratedFloat, float *tempCalibratedFloat)
+void BMP388_GetCalibratedData(float* pressureCalibratedFloat, float* tempCalibratedFloat)
 {
     // read raw sensor values
     uint32_t pressureRaw = 0;
-    uint32_t tempRaw = 0;
+    uint32_t tempRaw     = 0;
     BMP388_ReadRawData(&pressureRaw, &tempRaw);
 
     // must compensate temperature first

@@ -75,8 +75,9 @@
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
-#define VECT_TAB_OFFSET 0x00 /*!< Vector Table base offset field. \
-                                  This value must be a multiple of 0x200. */
+#define VECT_TAB_OFFSET                       \
+    0x00 /*!< Vector Table base offset field. \
+              This value must be a multiple of 0x200. */
 /******************************************************************************/
 
 /**
@@ -102,9 +103,9 @@
              is no need to call the 2 first functions listed above, since SystemCoreClock
              variable is updated automatically.
 */
-uint32_t SystemCoreClock = 16000000;
+uint32_t SystemCoreClock        = 16000000;
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
-const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
+const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
 /**
  * @}
  */
@@ -218,7 +219,7 @@ void SystemCoreClockUpdate(void)
            SYSCLK = PLL_VCO / PLL_P
            */
         pllsource = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) >> 22;
-        pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
+        pllm      = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
 
         if (pllsource != 0)
         {
@@ -231,7 +232,7 @@ void SystemCoreClockUpdate(void)
             pllvco = (HSI_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
         }
 
-        pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> 16) + 1) * 2;
+        pllp            = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> 16) + 1) * 2;
         SystemCoreClock = pllvco / pllp;
         break;
     default:

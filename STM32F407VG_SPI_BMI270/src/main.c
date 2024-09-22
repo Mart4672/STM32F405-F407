@@ -88,7 +88,6 @@ static void SPI_Init(SPI_HandleTypeDef* hspi);
  */
 int main(void)
 {
-
     /**
      * STM32F4xx HAL library initialization:
      * - Configure the Flash prefetch, instruction and Data caches
@@ -126,18 +125,18 @@ int main(void)
     BMI270_IO_Init();
 
     // Set config values for this BMI270 instance
-    imu1.pwrConf = BMI_PWR_CONF;
-    imu1.pwrCtrl = BMI_PWR_CTRL;
-    imu1.accConf = BMI_ACC_CONF;
-    imu1.accRange = BMI_ACC_RANGE;
-    imu1.gyrConf = BMI_GYR_CONF;
-    imu1.gyrRange = BMI_GYR_RANGE;
-    imu1.int1IOConf = BMI_INT1_IO_CONF;
+    imu1.pwrConf         = BMI_PWR_CONF;
+    imu1.pwrCtrl         = BMI_PWR_CTRL;
+    imu1.accConf         = BMI_ACC_CONF;
+    imu1.accRange        = BMI_ACC_RANGE;
+    imu1.gyrConf         = BMI_GYR_CONF;
+    imu1.gyrRange        = BMI_GYR_RANGE;
+    imu1.int1IOConf      = BMI_INT1_IO_CONF;
     imu1.int1Int2MapData = BMI_INT1_INT2_MAP_DATA;
-    imu1.intLatch = BMI_INT_LATCH;
+    imu1.intLatch        = BMI_INT_LATCH;
 
     uint8_t initializationSuccessImu1 = 1;
-    initializationSuccessImu1 = BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
+    initializationSuccessImu1         = BMI270_Init(&imu1, &hspi1, BMI270_CS_GPIO_PORT, BMI270_CS_PIN);
 
     if (!initializationSuccessImu1)
     {
@@ -159,55 +158,55 @@ int main(void)
     char buf1[100];
     int len1;
     len1 = sprintf(buf1, "BMI270_Init returned %u\r\n\n\n", initializationSuccessImu1);
-    HAL_UART_Transmit(&UartHandle, (uint8_t *)buf1, len1, 100);
+    HAL_UART_Transmit(&UartHandle, (uint8_t*)buf1, len1, 100);
 
     /*#### Configure the BMP388 Device ######################################*/
 
     // TODO initialize BMP388 with configurable SPI handle
     // initial BMP388 settings to save to the device
-    bmp388initConfig.Communication_Mode = BMP388_SERIAL_INTERFACE_4WIRE; // default
-    bmp388initConfig.Sensor_Measurement_Mode = BMP388_MEASUREMENT_CONFIG_TEMP_AND_PRESSURE;
-    bmp388initConfig.Sensor_Power_Mode = BMP388_MEASUREMENT_CONFIG_NORMAL_MODE;
-    bmp388initConfig.Oversampling_Rate_Pressure = BMP388_PRESSURE_OSR_X16;
+    bmp388initConfig.Communication_Mode            = BMP388_SERIAL_INTERFACE_4WIRE; // default
+    bmp388initConfig.Sensor_Measurement_Mode       = BMP388_MEASUREMENT_CONFIG_TEMP_AND_PRESSURE;
+    bmp388initConfig.Sensor_Power_Mode             = BMP388_MEASUREMENT_CONFIG_NORMAL_MODE;
+    bmp388initConfig.Oversampling_Rate_Pressure    = BMP388_PRESSURE_OSR_X16;
     bmp388initConfig.Oversampling_Rate_Temperature = BMP388_TEMPERATURE_OSR_X2;
-    bmp388initConfig.Output_DataRate = BMP388_ODR_25_HZ;        // see section 3.9.2 for maximum ODR based on OSR values
-    bmp388initConfig.Filter_Setting = BMP388_IIR_FILTER_COEF_0; // BMP388_IIR_FILTER_COEF_3
+    bmp388initConfig.Output_DataRate = BMP388_ODR_25_HZ; // see section 3.9.2 for maximum ODR based on OSR values
+    bmp388initConfig.Filter_Setting  = BMP388_IIR_FILTER_COEF_0; // BMP388_IIR_FILTER_COEF_3
 
     BMP388_Initialize(&bmp388initConfig);
 
     // initial BMP388 interrupt settings to save to the device
-    bmp388interruptConfig.Output_Type = BMP388_INTERRUPT_OUTOUT_PUSH_PULL; // defualt
-    bmp388interruptConfig.Active_Level = BMP388_INTERRUPT_ACTIVE_HIGH;     // default
-    bmp388interruptConfig.Latching = BMP388_INTERRUPT_LATCHING_ENABLED;
+    bmp388interruptConfig.Output_Type    = BMP388_INTERRUPT_OUTOUT_PUSH_PULL; // defualt
+    bmp388interruptConfig.Active_Level   = BMP388_INTERRUPT_ACTIVE_HIGH;      // default
+    bmp388interruptConfig.Latching       = BMP388_INTERRUPT_LATCHING_ENABLED;
     bmp388interruptConfig.Fifo_Watermark = BMP388_INTERRUPT_FIFO_WATERMARK_DISABLED;
-    bmp388interruptConfig.Fifo_Full = BMP388_INTERRUPT_FIFO_FULL_DISABLED;
-    bmp388interruptConfig.Data_Ready = BMP388_INTERRUPT_DATA_READY_ENABLED;
+    bmp388interruptConfig.Fifo_Full      = BMP388_INTERRUPT_FIFO_FULL_DISABLED;
+    bmp388interruptConfig.Data_Ready     = BMP388_INTERRUPT_DATA_READY_ENABLED;
 
     BMP388_ConfigureInterrupt(&bmp388interruptConfig);
 
     // HAL_GetTick() should return the number of milliseconds elapsed since startup
 
-    timer_val = __HAL_TIM_GET_COUNTER(&htim5);
-    uint32_t printTime = 0;
-    uint32_t totalPrintTime = 0;
+    timer_val                    = __HAL_TIM_GET_COUNTER(&htim5);
+    uint32_t printTime           = 0;
+    uint32_t totalPrintTime      = 0;
     uint32_t interruptStatusTime = 0;
-    uint32_t imu1AccelTime = 0;
-    uint32_t imu1GyroTime = 0;
-    float pressure = 0.0f;
-    float temp = 0.0f;
+    uint32_t imu1AccelTime       = 0;
+    uint32_t imu1GyroTime        = 0;
+    float pressure               = 0.0f;
+    float temp                   = 0.0f;
     char buf3[100];
     int len3;
     char buf4[150];
     int len4;
-    uint16_t numReadDataCalls = 0;
+    uint16_t numReadDataCalls      = 0;
     uint16_t numAccelReadDataCalls = 0;
-    uint32_t bmiResetCount = 0;
-    uint16_t numGyroReadDataCalls = 0;
+    uint32_t bmiResetCount         = 0;
+    uint16_t numGyroReadDataCalls  = 0;
 
     HAL_Delay(1000);
 
     len3 = sprintf(buf3, "timer_val is %lu\r\n\n\n", timer_val);
-    HAL_UART_Transmit(&UartHandle, (uint8_t *)buf3, len3, 100);
+    HAL_UART_Transmit(&UartHandle, (uint8_t*)buf3, len3, 100);
 
     while (1)
     {
@@ -231,7 +230,7 @@ int main(void)
         if ((bmi270readAccel == 1) && (timer_val - imu1AccelTime) >= READ_BMI270_ACCEL_TASK_PERIOD_MICROSECONDS)
         {
             bmi270readAccel = 0;
-            imu1AccelTime = __HAL_TIM_GET_COUNTER(&htim5);
+            imu1AccelTime   = __HAL_TIM_GET_COUNTER(&htim5);
 
             // read calibrated sensor values
             BMI270_ReadAccelerometer(&imu1);
@@ -243,7 +242,7 @@ int main(void)
         if ((bmi270readGyro == 1) && (timer_val - imu1GyroTime) >= READ_BMI270_GYRO_TASK_PERIOD_MICROSECONDS)
         {
             bmi270readGyro = 0;
-            imu1GyroTime = __HAL_TIM_GET_COUNTER(&htim5);
+            imu1GyroTime   = __HAL_TIM_GET_COUNTER(&htim5);
 
             // read calibrated sensor values
             BMI270_ReadGyroscope(&imu1);
@@ -254,7 +253,7 @@ int main(void)
         // read BMP388 data task
         if ((bmp388readData == 1) && (timer_val - interruptStatusTime) >= READ_BMP388_TASK_PERIOD_MICROSECONDS)
         {
-            bmp388readData = 0;
+            bmp388readData      = 0;
             interruptStatusTime = __HAL_TIM_GET_COUNTER(&htim5);
 
             // read the interrupt status register to de-asssert the sensor interrupt pin
@@ -271,23 +270,36 @@ int main(void)
         {
             printTime = __HAL_TIM_GET_COUNTER(&htim5);
 
-            // len4 = snprintf(buf4, 103, "[%10lu] Data reads: %3u, pressure: %6d Pa, temp: (%5d/100) C, print task time: %6lu us\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
-            len4 = snprintf(buf4, 145, "[%04lus]\r\n[Accel] Reads: %3u, x/y/z: %3d/%3d/%3d m/s/10\r\n[Gyro] Reads: %3u, x/y/z: %5d/%5d/%5d deg/s, resets: %lu, printT: %5lu us\r\n", timer_val/1000000, numAccelReadDataCalls, (int)(imu1.acc_mps2[0] * 10.f), (int)(imu1.acc_mps2[1] * 10.f), (int)(imu1.acc_mps2[2] * 10.f), numGyroReadDataCalls, (int)(imu1.gyr_rps[0] * RADIANS_TO_DEGREES), (int)(imu1.gyr_rps[1] * RADIANS_TO_DEGREES), (int)(imu1.gyr_rps[2] * RADIANS_TO_DEGREES), bmiResetCount, totalPrintTime);
+            // len4 = snprintf(buf4, 103, "[%10lu] Data reads: %3u, pressure: %6d Pa, temp: (%5d/100) C, print task
+            // time: %6lu us\r\n\n\n", timer_val, numReadDataCalls, (int)pressure, (int)(temp * 100.f), totalPrintTime);
+            len4 = snprintf(buf4,
+                            145,
+                            "[%04lus]\r\n[Accel] Reads: %3u, x/y/z: %3d/%3d/%3d m/s/10\r\n[Gyro] Reads: %3u, x/y/z: "
+                            "%5d/%5d/%5d deg/s, resets: %lu, printT: %5lu us\r\n",
+                            timer_val / 1000000,
+                            numAccelReadDataCalls,
+                            (int)(imu1.acc_mps2[0] * 10.f),
+                            (int)(imu1.acc_mps2[1] * 10.f),
+                            (int)(imu1.acc_mps2[2] * 10.f),
+                            numGyroReadDataCalls,
+                            (int)(imu1.gyr_rps[0] * RADIANS_TO_DEGREES),
+                            (int)(imu1.gyr_rps[1] * RADIANS_TO_DEGREES),
+                            (int)(imu1.gyr_rps[2] * RADIANS_TO_DEGREES),
+                            bmiResetCount,
+                            totalPrintTime);
             // HAL_UART_Transmit(&UartHandle, (uint8_t *)buf4, len4, 150);
-            HAL_UART_Transmit_IT(&UartHandle, (uint8_t *)buf4, len4);
+            HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)buf4, len4);
 
             if (waitForUartTransmit)
             {
                 // wait until the transfer is complete if desired
-                while (UartReady != SET)
-                {
-                }
+                while (UartReady != SET) {}
                 UartReady = RESET;
             }
 
-            numReadDataCalls = 0;
+            numReadDataCalls      = 0;
             numAccelReadDataCalls = 0;
-            numGyroReadDataCalls = 0;
+            numGyroReadDataCalls  = 0;
 
             // time for UART Task to run
             totalPrintTime = __HAL_TIM_GET_COUNTER(&htim5) - printTime;
@@ -298,9 +310,7 @@ int main(void)
     }
 
     /* Infinite loop */
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 /**
@@ -338,13 +348,13 @@ static void SystemClock_Config(void)
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 8;
-    RCC_OscInitStruct.PLL.PLLN = 336;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 7;
+    RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM       = 8;
+    RCC_OscInitStruct.PLL.PLLN       = 336;
+    RCC_OscInitStruct.PLL.PLLP       = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ       = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
         Error_Handler();
@@ -352,9 +362,10 @@ static void SystemClock_Config(void)
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
        clocks dividers */
-    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.ClockType =
+        (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
@@ -425,12 +436,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  */
 static void MX_TIM5_Init(void)
 {
-    htim5.Instance = TIM5;
+    htim5.Instance               = TIM5;
     // set the timer prescaler to PLLN/PLLP
-    htim5.Init.Prescaler = 84 - 1; // (HAL_RCC_GetPCLK1Freq()/2) / 1000000 - 1
-    htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim5.Init.Period = 4294967295;
-    htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim5.Init.Prescaler         = 84 - 1; // (HAL_RCC_GetPCLK1Freq()/2) / 1000000 - 1
+    htim5.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    htim5.Init.Period            = 4294967295;
+    htim5.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
     htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
     {
@@ -447,16 +458,16 @@ static void SPI_Init(SPI_HandleTypeDef* hspi)
     {
         // Common SPI Configuration
         hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-        hspi->Init.Direction = SPI_DIRECTION_2LINES;
-        hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
-        hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
-        hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-        hspi->Init.CRCPolynomial = 7;
-        hspi->Init.DataSize = SPI_DATASIZE_8BIT;
-        hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
-        hspi->Init.NSS = SPI_NSS_SOFT;
-        hspi->Init.TIMode = SPI_TIMODE_DISABLED;
-        hspi->Init.Mode = SPI_MODE_MASTER;
+        hspi->Init.Direction         = SPI_DIRECTION_2LINES;
+        hspi->Init.CLKPhase          = SPI_PHASE_1EDGE;
+        hspi->Init.CLKPolarity       = SPI_POLARITY_LOW;
+        hspi->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
+        hspi->Init.CRCPolynomial     = 7;
+        hspi->Init.DataSize          = SPI_DATASIZE_8BIT;
+        hspi->Init.FirstBit          = SPI_FIRSTBIT_MSB;
+        hspi->Init.NSS               = SPI_NSS_SOFT;
+        hspi->Init.TIMode            = SPI_TIMODE_DISABLED;
+        hspi->Init.Mode              = SPI_MODE_MASTER;
 
         // HAL_SPI_Init internally calls HAL_SPI_MspInit in stm32f4xx_hal_msp.c
         HAL_SPI_Init(hspi);
@@ -510,13 +521,13 @@ static void USART_UART_Init(void)
         - Parity = None
         - BaudRate = 9600 baud (user configurable)
         - Hardware flow control disabled (RTS and CTS signals) */
-    UartHandle.Instance = USARTx;
-    UartHandle.Init.BaudRate = UART2_BAUD_RATE;
-    UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-    UartHandle.Init.StopBits = UART_STOPBITS_1;
-    UartHandle.Init.Parity = UART_PARITY_NONE;
-    UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    UartHandle.Init.Mode = UART_MODE_TX_RX;
+    UartHandle.Instance          = USARTx;
+    UartHandle.Init.BaudRate     = UART2_BAUD_RATE;
+    UartHandle.Init.WordLength   = UART_WORDLENGTH_8B;
+    UartHandle.Init.StopBits     = UART_STOPBITS_1;
+    UartHandle.Init.Parity       = UART_PARITY_NONE;
+    UartHandle.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    UartHandle.Init.Mode         = UART_MODE_TX_RX;
     UartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&UartHandle) != HAL_OK)
     {
@@ -531,7 +542,7 @@ static void USART_UART_Init(void)
  *         you can add your own implementation.
  * @retval None
  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* UartHandle)
 {
     // Set transmission flag: transfer complete
     UartReady = SET;
@@ -546,7 +557,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
  *         add your own implementation.
  * @retval None
  */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* UartHandle)
 {
     /* Turn LED3 on: Transfer error in reception/transmission process */
     BSP_LED_On(LED3);
@@ -560,9 +571,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 static void Error_Handler(void)
 {
     BSP_LED_On(LED3);
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 #ifdef USE_FULL_ASSERT
@@ -574,15 +583,13 @@ static void Error_Handler(void)
  * @param  line: assert_param error line source number
  * @retval None
  */
-void assert_failed(uint8_t *file, uint32_t line)
+void assert_failed(uint8_t* file, uint32_t line)
 {
     /* User can add his own implementation to report the file name and line number,
        ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
     /* Infinite loop */
-    while (1)
-    {
-    }
+    while (1) {}
 }
 #endif
 

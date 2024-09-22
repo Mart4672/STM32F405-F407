@@ -21,8 +21,8 @@ extern "C"
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdint.h>
 #include "stm32f4_discovery.h"
+#include <stdint.h>
 
     /** @defgroup BMP388
      * @{
@@ -86,16 +86,16 @@ extern "C"
      * @{
      */
 
-    void BMP388_Initialize(BMP388_InitializationConfig *initializationConfig);
-    void BMP388_ConfigureInterrupt(BMP388_InterruptConfig *interruptConfig);
+    void BMP388_Initialize(BMP388_InitializationConfig* initializationConfig);
+    void BMP388_ConfigureInterrupt(BMP388_InterruptConfig* interruptConfig);
     uint8_t BMP388_ReadID(void);
     uint8_t BMP388_ReadIntStatus(void);
     void BMP388_SetPowerMode(uint8_t powerMode);
     void BMP388_SetDataRate(uint8_t dataRateValue);
     void BMP388_Soft_Reset(void);
     void BMP388_Teardown(void);
-    void BMP388_ReadRawData(uint32_t *pressureUnsignedInt, uint32_t *tempUnsignedInt);
-    void BMP388_GetCalibratedData(float *pressureCalibratedFloat, float *tempCalibratedFloat);
+    void BMP388_ReadRawData(uint32_t* pressureUnsignedInt, uint32_t* tempUnsignedInt);
+    void BMP388_GetCalibratedData(float* pressureCalibratedFloat, float* tempCalibratedFloat);
 
     /**   BMP388_Exported_Functions
      * @}
@@ -112,7 +112,7 @@ extern "C"
  * @{
  */
 #define BMP388_CHIP_ID_ADDR 0x00
-#define BMP388_CHIP_ID 0x50
+#define BMP388_CHIP_ID      0x50
 /**
  * @}
  */
@@ -153,8 +153,8 @@ extern "C"
  * @note DATA_2: Pressure Data Bits 23 to 16 (default value 0x80)
  * @{
  */
-#define BMP388_DATA_0_PRESS_7_0 0x04
-#define BMP388_DATA_1_PRESS_15_8 0x05
+#define BMP388_DATA_0_PRESS_7_0   0x04
+#define BMP388_DATA_1_PRESS_15_8  0x05
 #define BMP388_DATA_2_PRESS_23_16 0x06
 /**
  * @}
@@ -168,8 +168,8 @@ extern "C"
  * @note DATA_5: Temperature Data Bits 23 to 16 (default value 0x80)
  * @{
  */
-#define BMP388_DATA_3_TEMP_7_0 0x07
-#define BMP388_DATA_4_TEMP_15_8 0x08
+#define BMP388_DATA_3_TEMP_7_0   0x07
+#define BMP388_DATA_4_TEMP_15_8  0x08
 #define BMP388_DATA_5_TEMP_23_16 0x09
 /**
  * @}
@@ -184,8 +184,8 @@ extern "C"
  * @note SENSORTIME_2: Sensor Time Data Bits 23 to 16
  * @{
  */
-#define BMP388_DATA_0_SENSORTIME_7_0 0x0C
-#define BMP388_DATA_1_SENSORTIME_15_8 0x0D
+#define BMP388_DATA_0_SENSORTIME_7_0   0x0C
+#define BMP388_DATA_1_SENSORTIME_15_8  0x0D
 #define BMP388_DATA_2_SENSORTIME_23_16 0x0E
 /**
  * @}
@@ -230,7 +230,7 @@ extern "C"
  * @{
  */
 #define BMP388_FIFO_LENGTH_0_B_7_0 0x12
-#define BMP388_FIFO_LENGTH_1_B_8 0x13
+#define BMP388_FIFO_LENGTH_1_B_8   0x13
 /**
  * @}
  */
@@ -256,7 +256,7 @@ extern "C"
  * @{
  */
 #define BMP388_FIFO_WATERMARK_0_BIT_7_0 0x15
-#define BMP388_FIFO_WATERMARK_1_BIT_8 0x16
+#define BMP388_FIFO_WATERMARK_1_BIT_8   0x16
 /**
  * @}
  */
@@ -273,7 +273,8 @@ extern "C"
  * @brief Configuration Register 1
  * @note Bit 0: fifo_mode - 0 = FIFO disabled, 1 = FIFO enabled
  * @note Bit 1: fifo_stop_on_full - 0 = keep writing when full, 1 = stop writing when full
- * @note Bit 2: fifo_time_en - 0 = don't return sensortime frame after last valid data frame, 1 = return sensortime frame after last valid data frame
+ * @note Bit 2: fifo_time_en - 0 = don't return sensortime frame after last valid data frame, 1 = return sensortime
+ * frame after last valid data frame
  * @note Bit 3: fifo_press_en - 0 = don't store pressure data in FIFO, 1 = store pressure data in FIFO
  * @note Bit 4: fifo_temp_en - 0 = don't store temperature data in FIFO, 1 = store temperature data in FIFO
  */
@@ -287,7 +288,8 @@ extern "C"
  * @note the down-sampling factor "n" can range from 1 to 128 based on the value of 2^(fifo_subsampling)
  * @note Bit 4 to 3: data_select
  * @note Select data source for pressure and temperature
- * @note 00 = unfiltered data (compensated or uncompensated), 01 = filtered data (compensated or uncompensated), 11 = reserved, same as for "unfilt" (don't use?)
+ * @note 00 = unfiltered data (compensated or uncompensated), 01 = filtered data (compensated or uncompensated), 11 =
+ * reserved, same as for "unfilt" (don't use?)
  */
 #define BMP388_FIFO_CONFIG_2_BIT_4_0 0x18
 
@@ -308,19 +310,19 @@ extern "C"
  * @note Bit 6: drdy_en - enable interrupt for INT pin and INT_STATUS register when sensor data is ready
  * @{
  */
-#define BMP388_INTERRUPT_CONFIG_ADDR 0x19
-#define BMP388_INTERRUPT_OUTOUT_PUSH_PULL ((uint8_t)0x00)        // 0b 0000 0000
-#define BMP388_INTERRUPT_OUTPUT_OPEN_DRAIN ((uint8_t)0x01)       // 0b 0000 0001
-#define BMP388_INTERRUPT_ACTIVE_LOW ((uint8_t)0x00)              // 0b 0000 0000
-#define BMP388_INTERRUPT_ACTIVE_HIGH ((uint8_t)0x02)             // 0b 0000 0010
-#define BMP388_INTERRUPT_LATCHING_DISABLED ((uint8_t)0x00)       // 0b 0000 0000
-#define BMP388_INTERRUPT_LATCHING_ENABLED ((uint8_t)0x04)        // 0b 0000 0100
+#define BMP388_INTERRUPT_CONFIG_ADDR             0x19
+#define BMP388_INTERRUPT_OUTOUT_PUSH_PULL        ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_INTERRUPT_OUTPUT_OPEN_DRAIN       ((uint8_t)0x01) // 0b 0000 0001
+#define BMP388_INTERRUPT_ACTIVE_LOW              ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_INTERRUPT_ACTIVE_HIGH             ((uint8_t)0x02) // 0b 0000 0010
+#define BMP388_INTERRUPT_LATCHING_DISABLED       ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_INTERRUPT_LATCHING_ENABLED        ((uint8_t)0x04) // 0b 0000 0100
 #define BMP388_INTERRUPT_FIFO_WATERMARK_DISABLED ((uint8_t)0x00) // 0b 0000 0000
-#define BMP388_INTERRUPT_FIFO_WATERMARK_ENABLED ((uint8_t)0x08)  // 0b 0000 1000
-#define BMP388_INTERRUPT_FIFO_FULL_DISABLED ((uint8_t)0x00)      // 0b 0000 0000
-#define BMP388_INTERRUPT_FIFO_FULL_ENABLED ((uint8_t)0x10)       // 0b 0001 0000
-#define BMP388_INTERRUPT_DATA_READY_DISABLED ((uint8_t)0x00)     // 0b 0000 0000
-#define BMP388_INTERRUPT_DATA_READY_ENABLED ((uint8_t)0x40)      // 0b 0100 0000
+#define BMP388_INTERRUPT_FIFO_WATERMARK_ENABLED  ((uint8_t)0x08) // 0b 0000 1000
+#define BMP388_INTERRUPT_FIFO_FULL_DISABLED      ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_INTERRUPT_FIFO_FULL_ENABLED       ((uint8_t)0x10) // 0b 0001 0000
+#define BMP388_INTERRUPT_DATA_READY_DISABLED     ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_INTERRUPT_DATA_READY_ENABLED      ((uint8_t)0x40) // 0b 0100 0000
 /**
  * @}
  */
@@ -334,12 +336,12 @@ extern "C"
  * @note Bit 2: i2c_wdt_sel - 0 I2C watchdog timeout after 1.25 ms, 1 = I2C watchdog timeout after 40 ms
  * @{
  */
-#define BMP388_SERIAL_INTERFACE_CONFIG_ADDR 0x1A
-#define BMP388_SERIAL_INTERFACE_4WIRE ((uint8_t)0x00)            // 0b 0000 0000
-#define BMP388_SERIAL_INTERFACE_3WIRE ((uint8_t)0x01)            // 0b 0000 0001
+#define BMP388_SERIAL_INTERFACE_CONFIG_ADDR      0x1A
+#define BMP388_SERIAL_INTERFACE_4WIRE            ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_SERIAL_INTERFACE_3WIRE            ((uint8_t)0x01) // 0b 0000 0001
 #define BMP388_SERIAL_INTERFACE_I2C_WDT_DISABLED ((uint8_t)0x00) // 0b 0000 0000
-#define BMP388_SERIAL_INTERFACE_I2C_WDT_ENABLED ((uint8_t)0x02)  // 0b 0000 0010
-#define BMP388_SERIAL_INTERFACE_WDT_TIMEOUT_1MS ((uint8_t)0x00)  // 0b 0000 0000
+#define BMP388_SERIAL_INTERFACE_I2C_WDT_ENABLED  ((uint8_t)0x02) // 0b 0000 0010
+#define BMP388_SERIAL_INTERFACE_WDT_TIMEOUT_1MS  ((uint8_t)0x00) // 0b 0000 0000
 #define BMP388_SERIAL_INTERFACE_WDT_TIMEOUT_40MS ((uint8_t)0x04) // 0b 0000 0100
 /**
  * @}
@@ -357,15 +359,15 @@ extern "C"
  * @note - 11 = Normal Mode (Continuous measurements)
  * @{
  */
-#define BMP388_MEASUREMENT_CONFIG_ADDR 0x1B
-#define BMP388_MEASUREMENT_CONFIG_NO_MEASUREMENTS ((uint8_t)0x00)   // 0b 0000 0000
-#define BMP388_MEASUREMENT_CONFIG_PRESSURE_ONLY ((uint8_t)0x01)     // 0b 0000 0001
-#define BMP388_MEASUREMENT_CONFIG_TEMPERATURE_ONLY ((uint8_t)0x02)  // 0b 0000 0010
+#define BMP388_MEASUREMENT_CONFIG_ADDR              0x1B
+#define BMP388_MEASUREMENT_CONFIG_NO_MEASUREMENTS   ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_MEASUREMENT_CONFIG_PRESSURE_ONLY     ((uint8_t)0x01) // 0b 0000 0001
+#define BMP388_MEASUREMENT_CONFIG_TEMPERATURE_ONLY  ((uint8_t)0x02) // 0b 0000 0010
 #define BMP388_MEASUREMENT_CONFIG_TEMP_AND_PRESSURE ((uint8_t)0x03) // 0b 0000 0011
-#define BMP388_MEASUREMENT_CONFIG_SLEEP_MODE ((uint8_t)0x00)        // 0b 0000 0000
-#define BMP388_MEASUREMENT_CONFIG_FORCED_1_MODE ((uint8_t)0x10)     // 0b 0001 0000
-#define BMP388_MEASUREMENT_CONFIG_FORCED_2_MODE ((uint8_t)0x20)     // 0b 0010 0000
-#define BMP388_MEASUREMENT_CONFIG_NORMAL_MODE ((uint8_t)0x30)       // 0b 0011 0000
+#define BMP388_MEASUREMENT_CONFIG_SLEEP_MODE        ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_MEASUREMENT_CONFIG_FORCED_1_MODE     ((uint8_t)0x10) // 0b 0001 0000
+#define BMP388_MEASUREMENT_CONFIG_FORCED_2_MODE     ((uint8_t)0x20) // 0b 0010 0000
+#define BMP388_MEASUREMENT_CONFIG_NORMAL_MODE       ((uint8_t)0x30) // 0b 0011 0000
 /**
  * @}
  */
@@ -381,18 +383,18 @@ extern "C"
  * @{
  */
 #define BMP388_OVERSAMPLING_CONFIG_ADDR 0x1C
-#define BMP388_PRESSURE_OSR_X1 ((uint8_t)0x00)     // 0b 0000 0000
-#define BMP388_PRESSURE_OSR_X2 ((uint8_t)0x01)     // 0b 0000 0001
-#define BMP388_PRESSURE_OSR_X4 ((uint8_t)0x02)     // 0b 0000 0010
-#define BMP388_PRESSURE_OSR_X8 ((uint8_t)0x03)     // 0b 0000 0011
-#define BMP388_PRESSURE_OSR_X16 ((uint8_t)0x04)    // 0b 0000 0100
-#define BMP388_PRESSURE_OSR_X32 ((uint8_t)0x05)    // 0b 0000 0101
-#define BMP388_TEMPERATURE_OSR_X1 ((uint8_t)0x00)  // 0b 0000 0000
-#define BMP388_TEMPERATURE_OSR_X2 ((uint8_t)0x08)  // 0b 0000 1000
-#define BMP388_TEMPERATURE_OSR_X4 ((uint8_t)0x10)  // 0b 0001 0000
-#define BMP388_TEMPERATURE_OSR_X8 ((uint8_t)0x18)  // 0b 0001 1000
-#define BMP388_TEMPERATURE_OSR_X16 ((uint8_t)0x20) // 0b 0010 0000
-#define BMP388_TEMPERATURE_OSR_X32 ((uint8_t)0x28) // 0b 0010 1000
+#define BMP388_PRESSURE_OSR_X1          ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_PRESSURE_OSR_X2          ((uint8_t)0x01) // 0b 0000 0001
+#define BMP388_PRESSURE_OSR_X4          ((uint8_t)0x02) // 0b 0000 0010
+#define BMP388_PRESSURE_OSR_X8          ((uint8_t)0x03) // 0b 0000 0011
+#define BMP388_PRESSURE_OSR_X16         ((uint8_t)0x04) // 0b 0000 0100
+#define BMP388_PRESSURE_OSR_X32         ((uint8_t)0x05) // 0b 0000 0101
+#define BMP388_TEMPERATURE_OSR_X1       ((uint8_t)0x00) // 0b 0000 0000
+#define BMP388_TEMPERATURE_OSR_X2       ((uint8_t)0x08) // 0b 0000 1000
+#define BMP388_TEMPERATURE_OSR_X4       ((uint8_t)0x10) // 0b 0001 0000
+#define BMP388_TEMPERATURE_OSR_X8       ((uint8_t)0x18) // 0b 0001 1000
+#define BMP388_TEMPERATURE_OSR_X16      ((uint8_t)0x20) // 0b 0010 0000
+#define BMP388_TEMPERATURE_OSR_X32      ((uint8_t)0x28) // 0b 0010 1000
 /**
  * @}
  */
@@ -406,24 +408,24 @@ extern "C"
  * @{
  */
 #define BMP388_ODR_CONFIG_ADDR 0x1D
-#define BMP388_ODR_200_HZ ((uint8_t)0x00)    // sampling period = 5 ms, 2^odr_sel = 1
-#define BMP388_ODR_100_HZ ((uint8_t)0x01)    // sampling period = 10 ms, 2^odr_sel = 2
-#define BMP388_ODR_50_HZ ((uint8_t)0x02)     // sampling period = 20 ms, 2^odr_sel = 4
-#define BMP388_ODR_25_HZ ((uint8_t)0x03)     // sampling period = 40 ms, 2^odr_sel = 8
-#define BMP388_ODR_12p5_HZ ((uint8_t)0x04)   // sampling period = 80 ms, 2^odr_sel = 16
-#define BMP388_ODR_6p25_HZ ((uint8_t)0x05)   // sampling period = 160 ms, 2^odr_sel = 32
-#define BMP388_ODR_3p1_HZ ((uint8_t)0x06)    // sampling period = 320 ms, 2^odr_sel = 64
-#define BMP388_ODR_1p5_HZ ((uint8_t)0x07)    // sampling period = 640 ms, 2^odr_sel = 128
-#define BMP388_ODR_0p78_HZ ((uint8_t)0x08)   // sampling period = 1.280 s, 2^odr_sel = 256
-#define BMP388_ODR_0p39_HZ ((uint8_t)0x09)   // sampling period = 2.560 s, 2^odr_sel = 512
-#define BMP388_ODR_0p2_HZ ((uint8_t)0x0A)    // sampling period = 5.120 s, 2^odr_sel = 1024
-#define BMP388_ODR_0p1_HZ ((uint8_t)0x0B)    // sampling period = 10.24 s, 2^odr_sel = 2048
-#define BMP388_ODR_0p05_HZ ((uint8_t)0x0C)   // sampling period = 20.48 s, 2^odr_sel = 4096
-#define BMP388_ODR_0p02_HZ ((uint8_t)0x0D)   // sampling period = 40.96 s, 2^odr_sel = 8192
-#define BMP388_ODR_0p01_HZ ((uint8_t)0x0E)   // sampling period = 81.92 s, 2^odr_sel = 16384
-#define BMP388_ODR_0p006_HZ ((uint8_t)0x0F)  // sampling period = 163.84 s, 2^odr_sel = 32768
-#define BMP388_ODR_0p003_HZ ((uint8_t)0x10)  // sampling period = 327.68 s, 2^odr_sel = 65536
-#define BMP388_ODR_0p0015_HZ ((uint8_t)0x11) // sampling period = 655.36 s, 2^odr_sel = 131072
+#define BMP388_ODR_200_HZ      ((uint8_t)0x00) // sampling period = 5 ms, 2^odr_sel = 1
+#define BMP388_ODR_100_HZ      ((uint8_t)0x01) // sampling period = 10 ms, 2^odr_sel = 2
+#define BMP388_ODR_50_HZ       ((uint8_t)0x02) // sampling period = 20 ms, 2^odr_sel = 4
+#define BMP388_ODR_25_HZ       ((uint8_t)0x03) // sampling period = 40 ms, 2^odr_sel = 8
+#define BMP388_ODR_12p5_HZ     ((uint8_t)0x04) // sampling period = 80 ms, 2^odr_sel = 16
+#define BMP388_ODR_6p25_HZ     ((uint8_t)0x05) // sampling period = 160 ms, 2^odr_sel = 32
+#define BMP388_ODR_3p1_HZ      ((uint8_t)0x06) // sampling period = 320 ms, 2^odr_sel = 64
+#define BMP388_ODR_1p5_HZ      ((uint8_t)0x07) // sampling period = 640 ms, 2^odr_sel = 128
+#define BMP388_ODR_0p78_HZ     ((uint8_t)0x08) // sampling period = 1.280 s, 2^odr_sel = 256
+#define BMP388_ODR_0p39_HZ     ((uint8_t)0x09) // sampling period = 2.560 s, 2^odr_sel = 512
+#define BMP388_ODR_0p2_HZ      ((uint8_t)0x0A) // sampling period = 5.120 s, 2^odr_sel = 1024
+#define BMP388_ODR_0p1_HZ      ((uint8_t)0x0B) // sampling period = 10.24 s, 2^odr_sel = 2048
+#define BMP388_ODR_0p05_HZ     ((uint8_t)0x0C) // sampling period = 20.48 s, 2^odr_sel = 4096
+#define BMP388_ODR_0p02_HZ     ((uint8_t)0x0D) // sampling period = 40.96 s, 2^odr_sel = 8192
+#define BMP388_ODR_0p01_HZ     ((uint8_t)0x0E) // sampling period = 81.92 s, 2^odr_sel = 16384
+#define BMP388_ODR_0p006_HZ    ((uint8_t)0x0F) // sampling period = 163.84 s, 2^odr_sel = 32768
+#define BMP388_ODR_0p003_HZ    ((uint8_t)0x10) // sampling period = 327.68 s, 2^odr_sel = 65536
+#define BMP388_ODR_0p0015_HZ   ((uint8_t)0x11) // sampling period = 655.36 s, 2^odr_sel = 131072
 /**
  * @}
  */
@@ -436,14 +438,14 @@ extern "C"
  * @{
  */
 #define BMP388_IIR_FILTER_CONFIG_ADDR 0x1F
-#define BMP388_IIR_FILTER_COEF_0 ((uint8_t)0x00)   // 0b 0000 0000 = 0 coefficient (bypass mode)
-#define BMP388_IIR_FILTER_COEF_1 ((uint8_t)0x02)   // 0b 0000 0010 = filter coefficient of 1
-#define BMP388_IIR_FILTER_COEF_3 ((uint8_t)0x04)   // 0b 0000 0100 = filter coefficient of 3
-#define BMP388_IIR_FILTER_COEF_7 ((uint8_t)0x06)   // 0b 0000 0110 = filter coefficient of 7
-#define BMP388_IIR_FILTER_COEF_15 ((uint8_t)0x08)  // 0b 0000 1000 = filter coefficient of 15
-#define BMP388_IIR_FILTER_COEF_31 ((uint8_t)0x0A)  // 0b 0000 1010 = filter coefficient of 31
-#define BMP388_IIR_FILTER_COEF_63 ((uint8_t)0x0C)  // 0b 0000 1100 = filter coefficient of 63
-#define BMP388_IIR_FILTER_COEF_127 ((uint8_t)0x0E) // 0b 0000 1110 = filter coefficient of 127
+#define BMP388_IIR_FILTER_COEF_0      ((uint8_t)0x00) // 0b 0000 0000 = 0 coefficient (bypass mode)
+#define BMP388_IIR_FILTER_COEF_1      ((uint8_t)0x02) // 0b 0000 0010 = filter coefficient of 1
+#define BMP388_IIR_FILTER_COEF_3      ((uint8_t)0x04) // 0b 0000 0100 = filter coefficient of 3
+#define BMP388_IIR_FILTER_COEF_7      ((uint8_t)0x06) // 0b 0000 0110 = filter coefficient of 7
+#define BMP388_IIR_FILTER_COEF_15     ((uint8_t)0x08) // 0b 0000 1000 = filter coefficient of 15
+#define BMP388_IIR_FILTER_COEF_31     ((uint8_t)0x0A) // 0b 0000 1010 = filter coefficient of 31
+#define BMP388_IIR_FILTER_COEF_63     ((uint8_t)0x0C) // 0b 0000 1100 = filter coefficient of 63
+#define BMP388_IIR_FILTER_COEF_127    ((uint8_t)0x0E) // 0b 0000 1110 = filter coefficient of 127
 /**
  * @}
  */
@@ -456,24 +458,24 @@ extern "C"
  * @note See section 3.11.1 - Memory Map Trimming Coefficients for more info
  * @{
  */
-#define BMP388_NVM_PAR_T1_7_0_ADDR 0x31 // 16 bit unsigned
+#define BMP388_NVM_PAR_T1_7_0_ADDR  0x31 // 16 bit unsigned
 #define BMP388_NVM_PAR_T1_15_8_ADDR 0x32
-#define BMP388_NVM_PAR_T2_7_0_ADDR 0x33 // 16 bit unsigned
+#define BMP388_NVM_PAR_T2_7_0_ADDR  0x33 // 16 bit unsigned
 #define BMP388_NVM_PAR_T2_15_8_ADDR 0x34
-#define BMP388_NVM_PAR_T3_7_0_ADDR 0x35 // 8 bit signed
-#define BMP388_NVM_PAR_P1_7_0_ADDR 0x36 // 16 bit signed
+#define BMP388_NVM_PAR_T3_7_0_ADDR  0x35 // 8 bit signed
+#define BMP388_NVM_PAR_P1_7_0_ADDR  0x36 // 16 bit signed
 #define BMP388_NVM_PAR_P1_15_8_ADDR 0x37
-#define BMP388_NVM_PAR_P2_7_0_ADDR 0x38 // 16 bit signed
+#define BMP388_NVM_PAR_P2_7_0_ADDR  0x38 // 16 bit signed
 #define BMP388_NVM_PAR_P2_15_8_ADDR 0x39
-#define BMP388_NVM_PAR_P3_7_0_ADDR 0x3A // 8 bit signed
-#define BMP388_NVM_PAR_P4_7_0_ADDR 0x3B // 8 bit signed
-#define BMP388_NVM_PAR_P5_7_0_ADDR 0x3C // 16 bit unsigned
+#define BMP388_NVM_PAR_P3_7_0_ADDR  0x3A // 8 bit signed
+#define BMP388_NVM_PAR_P4_7_0_ADDR  0x3B // 8 bit signed
+#define BMP388_NVM_PAR_P5_7_0_ADDR  0x3C // 16 bit unsigned
 #define BMP388_NVM_PAR_P5_15_8_ADDR 0x3D
-#define BMP388_NVM_PAR_P6_7_0_ADDR 0x3E // 16 bit unsigned
+#define BMP388_NVM_PAR_P6_7_0_ADDR  0x3E // 16 bit unsigned
 #define BMP388_NVM_PAR_P6_15_8_ADDR 0x3F
-#define BMP388_NVM_PAR_P7_7_0_ADDR 0x40 // 8 bit signed
-#define BMP388_NVM_PAR_P8_7_0_ADDR 0x41 // 8 bit signed
-#define BMP388_NVM_PAR_P9_7_0_ADDR 0x42 // 16 bit signed
+#define BMP388_NVM_PAR_P7_7_0_ADDR  0x40 // 8 bit signed
+#define BMP388_NVM_PAR_P8_7_0_ADDR  0x41 // 8 bit signed
+#define BMP388_NVM_PAR_P9_7_0_ADDR  0x42 // 16 bit signed
 #define BMP388_NVM_PAR_P9_15_8_ADDR 0x43
 #define BMP388_NVM_PAR_P10_7_0_ADDR 0x44 // 8 bit signed
 #define BMP388_NVM_PAR_P11_7_0_ADDR 0x45 // 8 bit signed
@@ -488,10 +490,10 @@ extern "C"
  * @note Bit 7 to 0: cmd - all available commands - see datasheet
  * @{
  */
-#define BMP388_CMD_ADDR 0x7E
+#define BMP388_CMD_ADDR         0x7E
 #define BMP388_CMD_NO_OPERATION ((uint8_t)0x00) // 0b 0000 0000 = reserved - no command
-#define BMP388_CMD_FIFO_FLUSH ((uint8_t)0xB0)   // 0b 1011 0000 = clear FIFO, does not change FIFO_CONFIG registers
-#define BMP388_CMD_SOFTRESET ((uint8_t)0xB6)    // 0b 1011 0110 = softreset, all config settings set to default
+#define BMP388_CMD_FIFO_FLUSH   ((uint8_t)0xB0) // 0b 1011 0000 = clear FIFO, does not change FIFO_CONFIG registers
+#define BMP388_CMD_SOFTRESET    ((uint8_t)0xB6) // 0b 1011 0110 = softreset, all config settings set to default
     /**
      * @}
      */

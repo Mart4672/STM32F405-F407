@@ -5,39 +5,39 @@
 
 // Conversion defines
 #define EARTH_G_TO_METER_PER_SECOND 9.81f
-#define DEGREES_TO_RADIANS 0.01745329251f
-#define RADIANS_TO_DEGREES 57.29577951f
+#define DEGREES_TO_RADIANS          0.01745329251f
+#define RADIANS_TO_DEGREES          57.29577951f
 
 // Register defines
 
 #define BMI270_CHIP_ID_ADDR         0x00
-#define BMI_ACC_DATA_ADDR 			0x0C
-#define BMI_GYR_DATA_ADDR			0x12
-#define BMI_INT_STATUS_1_ADDR 		0x1D
+#define BMI_ACC_DATA_ADDR           0x0C
+#define BMI_GYR_DATA_ADDR           0x12
+#define BMI_INT_STATUS_1_ADDR       0x1D
 #define BMI_INTERNAL_STATUS_ADDR    0x21
-#define BMI_TEMP_DATA_ADDR 			0x22
+#define BMI_TEMP_DATA_ADDR          0x22
 // TODO add a function that reads the GYR_CAS
 // TODO see if GYR_CAS needs to be read each time
-#define BMI_GYR_CAS_ADDR 			0x3C
-#define BMI_ACC_CONF_ADDR 			0x40
-#define BMI_ACC_RANGE_ADDR 			0x41
-#define	BMI_GYR_CONF_ADDR		    0x42
-#define	BMI_GYR_RANGE_ADDR			0x43
-#define	BMI_SATURATION_ADDR			0x4A
-#define BMI_INT1_IO_CONF_ADDR 	   	0x53
-#define BMI_INT2_IO_CONF_ADDR 	   	0x54
-#define BMI_INT_LATCH_ADDR 	        0x55
+#define BMI_GYR_CAS_ADDR            0x3C
+#define BMI_ACC_CONF_ADDR           0x40
+#define BMI_ACC_RANGE_ADDR          0x41
+#define BMI_GYR_CONF_ADDR           0x42
+#define BMI_GYR_RANGE_ADDR          0x43
+#define BMI_SATURATION_ADDR         0x4A
+#define BMI_INT1_IO_CONF_ADDR       0x53
+#define BMI_INT2_IO_CONF_ADDR       0x54
+#define BMI_INT_LATCH_ADDR          0x55
 #define BMI_INT1_INT2_MAP_DATA_ADDR 0x58
 #define BMI_INIT_CTRL_ADDR          0x59
 #define BMI_INIT_DATA_ADDR          0x5E
-#define BMI_PWR_CONF_ADDR 		    0x7C
-#define BMI_PWR_CTRL_ADDR 		    0x7D
-#define BMI_CMD_ADDR 		        0x7E
+#define BMI_PWR_CONF_ADDR           0x7C
+#define BMI_PWR_CTRL_ADDR           0x7D
+#define BMI_CMD_ADDR                0x7E
 
 // Register (configuration) value defines
 
 // BMI270 static chip id
-#define BMI270_CHIP_ID              0x24
+#define BMI270_CHIP_ID 0x24
 
 // BMI270 INTERNAL_STATUS.message value for ASIC initialized
 #define BMI_INTERNAL_STATUS_INIT_OK 0x01
@@ -65,8 +65,8 @@
  ******************************************************************************
  *  bits 6 to 4: acc_bwp - filter bandwidth
  *  SENSOR BEHAVIOR FOR THIS SECTION DEPENDS ON BIT 7
- *  (hp mode behavior)_(ulp mode behavior) 
- *   0x00 - osr4_avg1        - oversample x4 OR no averaging 
+ *  (hp mode behavior)_(ulp mode behavior)
+ *   0x00 - osr4_avg1        - oversample x4 OR no averaging
  *   0x01 - osr2_avg2        - oversample x2 OR average 2 samples
  *   0x02 - norm_avg4        - oversample x1 OR average 4 samples (default)
  *   0x03 - cic_avg8         - no oversampling OR average 8 samples
@@ -79,7 +79,7 @@
  *   0x00 - ulp - power optimized
  *   0x01 - hp  - performance optimized (default)
  */
-#define BMI_ACC_CONF    ((0x01 << 7) | (0x00 << 4) | (0x08))
+#define BMI_ACC_CONF ((0x01 << 7) | (0x00 << 4) | (0x08))
 
 /**
  *  BMI270 accelerometer range value
@@ -90,7 +90,7 @@
  *   0x02 - range_8g    - acceleration detection range of +/- 8g (default)
  *   0x03 - range_16g   - acceleration detection range of +/- 16g
  */
-#define BMI_ACC_RANGE   0x00
+#define BMI_ACC_RANGE 0x00
 
 /**
  *  BMI270 gyroscpe configuration value
@@ -127,7 +127,7 @@
  *   0x00 - ulp - power optimized
  *   0x01 - hp  - performance optimized (default)
  */
-#define	BMI_GYR_CONF    ((0x01 << 7) | (0x01 << 6) | (0x00 << 4) | (0x09))
+#define BMI_GYR_CONF ((0x01 << 7) | (0x01 << 6) | (0x00 << 4) | (0x09))
 
 /**
  *  BMI270 gyroscope range value
@@ -143,7 +143,7 @@
  *   0x00 - range_250   - range of +/- 250°/s (dps), 131.2 LSB/dps (default)
  *   0x01 - range_2000  - range of +/- 2000°/s (dps), 16.4 LSB/dps
  */
-#define	BMI_GYR_RANGE       ((0x00 << 3) | (0x01))
+#define BMI_GYR_RANGE ((0x00 << 3) | (0x01))
 
 /**
  *  BMI270 interrupt 1 IO configuration value
@@ -164,7 +164,7 @@
  *   0x00 - off     - interrupt input disabled (default)
  *   0x01 - on      - interrupt input enabled
  */
-#define BMI_INT1_IO_CONF    ((0x00 << 4) | (0x01 << 3) | (0x00 << 2) | (0x01 << 1))
+#define BMI_INT1_IO_CONF ((0x00 << 4) | (0x01 << 3) | (0x00 << 2) | (0x01 << 1))
 
 /**
  *  BMI270 interrupt 2 IO configuration value
@@ -185,19 +185,19 @@
  *   0x00 - off     - interrupt input disabled (default)
  *   0x01 - on      - interrupt input enabled
  */
-#define BMI_INT2_IO_CONF    ((0x00 << 4) | (0x01 << 3) | (0x00 << 2) | (0x01 << 1))
+#define BMI_INT2_IO_CONF ((0x00 << 4) | (0x01 << 3) | (0x00 << 2) | (0x01 << 1))
 
 /**
  *  BMI270 interrupt latching configuration value
  *  Latched = interrupt pin stays on until BMI_INT_STATUS_1_ADDR is read
  *  NOT Latched = interrupt pin automatically turns off after 1/6400 s
- * 
+ *
  ******************************************************************************
  *  bit 0: int_latch - latched/non-latched interrupt mode select
  *   0x00 - none        - NOT Latched (default)
  *   0x01 - permanent   - Latched
- */ 
-#define BMI_INT_LATCH   0x00
+ */
+#define BMI_INT_LATCH 0x00
 
 /**
  *  BMI270 interrupt 1/2 mapping configuration value
@@ -226,13 +226,13 @@
  *  bit 7: err_int2 - Error interrupt mapped to INT2
  *   0x00 / 0x01 - not mapped (default) / mapped
  */
-#define BMI_INT1_INT2_MAP_DATA  (0x01 << 2)
+#define BMI_INT1_INT2_MAP_DATA (0x01 << 2)
 
 // BMI270 start initialization value
-#define BMI_INIT_CTRL_PREPARE   0x00
+#define BMI_INIT_CTRL_PREPARE 0x00
 
 // BMI270 finish initialization value
-#define BMI_INIT_CTRL_COMPLETE  0x01
+#define BMI_INIT_CTRL_COMPLETE 0x01
 
 /**
  *  BMI270 power configuration value
@@ -249,7 +249,7 @@
  *   0x00 - fup_off - fast power up disabled (default)
  *   0x01 - fup_on  - fast power up enabled
  */
-#define BMI_PWR_CONF    ((0x00 << 2) | (0x00 << 1) | (0x00))
+#define BMI_PWR_CONF ((0x00 << 2) | (0x00 << 1) | (0x00))
 
 /**
  *  BMI270 power control value
@@ -266,32 +266,33 @@
  *  bit 3: temp_en - enable the temperature sensor
  *   0x00 / 0x01 - disabled (default) / enabled
  */
-#define BMI_PWR_CTRL    ((0x01 << 3) | (0x01 << 2) | (0x01 << 1) | (0x00))
+#define BMI_PWR_CTRL ((0x01 << 3) | (0x01 << 2) | (0x01 << 1) | (0x00))
 
 // BMI270 soft reset command value
-#define BMI_CMD_SOFTRESET       0xB6
+#define BMI_CMD_SOFTRESET 0xB6
 
-typedef struct {
-	// SPI
-	SPI_HandleTypeDef *spiHandle;
-    GPIO_TypeDef 	  *chipSelectPinBank;
-	uint16_t 		   chipSelectPin;
+typedef struct
+{
+    // SPI
+    SPI_HandleTypeDef* spiHandle;
+    GPIO_TypeDef* chipSelectPinBank;
+    uint16_t chipSelectPin;
 
-	// DMA
-	uint8_t readingAcc;
-	uint8_t readingGyr;
-	uint8_t accTxBuf[8];
-	uint8_t gyrTxBuf[8];
-	volatile uint8_t accRxBuf[8];
-	volatile uint8_t gyrRxBuf[8];
+    // DMA
+    uint8_t readingAcc;
+    uint8_t readingGyr;
+    uint8_t accTxBuf[8];
+    uint8_t gyrTxBuf[8];
+    volatile uint8_t accRxBuf[8];
+    volatile uint8_t gyrRxBuf[8];
 
-	// Conversion constants (raw to m/s^2 and raw to rad/s)
-	float accConversion;
-	float gyrConversion;
+    // Conversion constants (raw to m/s^2 and raw to rad/s)
+    float accConversion;
+    float gyrConversion;
 
-	// x-y-z measurements
-	float acc_mps2[3];
-	float gyr_rps[3];
+    // x-y-z measurements
+    float acc_mps2[3];
+    float gyr_rps[3];
 
     // Configuration values
     uint16_t configFileSize;
@@ -315,12 +316,10 @@ typedef struct {
  * @param imu BMI270 struct that stores instance-specific data
  * @param spiHandle SPI handle for the specific BMI270 being used
  * @param chipSelectPinBank chip select bank for the BMI270 in use
- * @param chipSelectPin chip select pin for the BMI270 being used 
+ * @param chipSelectPin chip select pin for the BMI270 being used
  * @return uint8_t (1 on success)
  */
-uint8_t BMI270_Init(BMI270 *imu,
-				 SPI_HandleTypeDef *spiHandle,
-				 GPIO_TypeDef *chipSelectPinBank, uint16_t chipSelectPin);
+uint8_t BMI270_Init(BMI270* imu, SPI_HandleTypeDef* spiHandle, GPIO_TypeDef* chipSelectPinBank, uint16_t chipSelectPin);
 
 /**
  * @brief Low level register function that reads a BMI270 register
@@ -332,7 +331,7 @@ uint8_t BMI270_Init(BMI270 *imu,
  * @param data pointer to store the read data with
  * @return uint8_t (1 on success)
  */
-uint8_t BMI270_ReadRegister(BMI270 *imu, uint8_t regAddr, uint8_t *data);
+uint8_t BMI270_ReadRegister(BMI270* imu, uint8_t regAddr, uint8_t* data);
 
 /**
  * @brief Low level register function that writes to a BMI270 register
@@ -344,56 +343,57 @@ uint8_t BMI270_ReadRegister(BMI270 *imu, uint8_t regAddr, uint8_t *data);
  * @param data pointer to store the data to write
  * @return uint8_t (1 on success)
  */
-uint8_t BMI270_WriteRegister(BMI270 *imu, uint8_t regAddr, uint8_t data);
+uint8_t BMI270_WriteRegister(BMI270* imu, uint8_t regAddr, uint8_t data);
 
-// TODO determine if acceleration readings from this function remain at the max/min value when the sensor is saturated or if the values overflow
-// if overflow occurs, use the saturation register in the Read functions to determine when this happens so that the final value can be overriden
+// TODO determine if acceleration readings from this function remain at the max/min value when the sensor is saturated
+// or if the values overflow if overflow occurs, use the saturation register in the Read functions to determine when
+// this happens so that the final value can be overriden
 /**
  * @brief High level Polling function to gets x/y/z accelerations in m/s^2
- * 
+ *
  * @param imu BMI270 struct
  * @return uint8_t (1 on success)
  */
-uint8_t BMI270_ReadAccelerometer(BMI270 *imu);
+uint8_t BMI270_ReadAccelerometer(BMI270* imu);
 
 /**
  * @brief High level Polling function to gets x/y/z angular rates in rad/s
- * 
+ *
  * @param imu BMI270 struct
  * @return uint8_t (1 on success)
  */
-uint8_t BMI270_ReadGyroscope(BMI270 *imu);
+uint8_t BMI270_ReadGyroscope(BMI270* imu);
 
 /**
  * @brief High level Polling function that attempts the read the accelerometer data using Direct Memory Access (DMA)
- * 
+ *
  * @param imu BMI270 struct
  * @return uint8_t (returns 1 if HAL_SPI_TransmitReceive_DMA was successful, 0 otherwise)
  */
-uint8_t BMI270_ReadAccelerometerDMA(BMI270 *imu);
+uint8_t BMI270_ReadAccelerometerDMA(BMI270* imu);
 
 /**
  * @brief Function that completes a successful accelerometer Direct Memory Access (DMA) read.
  * @note if BMI270_ReadAccelerometerDMA returns 1, call this function to save the readings in the BMI270 struct in m/s^2
- * 
+ *
  * @param imu BMI270 struct
  */
-void BMI270_ReadAccelerometerDMA_Complete(BMI270 *imu);
+void BMI270_ReadAccelerometerDMA_Complete(BMI270* imu);
 
 /**
  * @brief High level Polling function that attempts the read the gyroscope data using Direct Memory Access (DMA)
- * 
+ *
  * @param imu BMI270 struct
  * @return uint8_t (returns 1 if HAL_SPI_TransmitReceive_DMA was successful, 0 otherwise)
  */
-uint8_t BMI270_ReadGyroscopeDMA(BMI270 *imu);
+uint8_t BMI270_ReadGyroscopeDMA(BMI270* imu);
 
 /**
  * @brief Function that completes a successful gyroscope Direct Memory Access (DMA) read.
  * @note if BMI270_ReadGyroscopeDMA returns 1, call this function to save the readings in the BMI270 struct in rad/s
- * 
+ *
  * @param imu BMI270 struct
  */
-void BMI270_ReadGyroscopeDMA_Complete(BMI270 *imu);
+void BMI270_ReadGyroscopeDMA_Complete(BMI270* imu);
 
 #endif

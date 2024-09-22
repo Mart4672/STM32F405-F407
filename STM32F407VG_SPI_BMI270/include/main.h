@@ -21,22 +21,22 @@
 #define __MAIN_H
 
 /* Includes -----------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
-#include "stm32f4_discovery.h"
 #include "bmi270.h"
 #include "bmp388.h"
+#include "stm32f4_discovery.h"
+#include "stm32f4xx_hal.h"
 #include <stdio.h>
 
 /* Exported types -----------------------------------------------------------*/
 /* Exported constants -------------------------------------------------------*/
-#define READ_BMI270_ACCEL_TASK_RATE_HZ 100
-#define READ_BMI270_ACCEL_TASK_PERIOD_MICROSECONDS (1000000/READ_BMI270_ACCEL_TASK_RATE_HZ)
-#define READ_BMI270_GYRO_TASK_RATE_HZ 200
-#define READ_BMI270_GYRO_TASK_PERIOD_MICROSECONDS (1000000/READ_BMI270_GYRO_TASK_RATE_HZ)
-#define READ_BMP388_TASK_RATE_HZ 25
-#define READ_BMP388_TASK_PERIOD_MICROSECONDS (1000000/READ_BMP388_TASK_RATE_HZ)
-#define UART_PRINT_TASK_RATE_HZ 1
-#define UART_PRINT_TASK_PERIOD_MICROSECONDS (1000000/UART_PRINT_TASK_RATE_HZ)
+#define READ_BMI270_ACCEL_TASK_RATE_HZ             100
+#define READ_BMI270_ACCEL_TASK_PERIOD_MICROSECONDS (1000000 / READ_BMI270_ACCEL_TASK_RATE_HZ)
+#define READ_BMI270_GYRO_TASK_RATE_HZ              200
+#define READ_BMI270_GYRO_TASK_PERIOD_MICROSECONDS  (1000000 / READ_BMI270_GYRO_TASK_RATE_HZ)
+#define READ_BMP388_TASK_RATE_HZ                   25
+#define READ_BMP388_TASK_PERIOD_MICROSECONDS       (1000000 / READ_BMP388_TASK_RATE_HZ)
+#define UART_PRINT_TASK_RATE_HZ                    1
+#define UART_PRINT_TASK_PERIOD_MICROSECONDS        (1000000 / UART_PRINT_TASK_RATE_HZ)
 
 /* Exported macro ------------------------------------------------------------*/
 #define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))

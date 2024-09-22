@@ -435,77 +435,76 @@ const uint8_t bmi270_config_file[] = {
     0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00,
     0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e,
     0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80,
-    0x2e, 0x00, 0xc1
-};
+    0x2e, 0x00, 0xc1};
 
-uint8_t BMI270_Init(BMI270 *imu,
-				    SPI_HandleTypeDef *spiHandle,
-				    GPIO_TypeDef *chipSelectPinBank,
-                    uint16_t chipSelectPin) 
+uint8_t BMI270_Init(BMI270* imu, SPI_HandleTypeDef* spiHandle, GPIO_TypeDef* chipSelectPinBank, uint16_t chipSelectPin)
 {
-	// Store interface parameters in struct
-	imu->spiHandle 		    = spiHandle;
-	imu->chipSelectPinBank 	= chipSelectPinBank;
-	imu->chipSelectPin 		= chipSelectPin;
+    // Store interface parameters in struct
+    imu->spiHandle         = spiHandle;
+    imu->chipSelectPinBank = chipSelectPinBank;
+    imu->chipSelectPin     = chipSelectPin;
 
     // set config file size
-    imu->configFileSize = sizeof(bmi270_config_file);   // 8192
+    imu->configFileSize = sizeof(bmi270_config_file); // 8192
 
     // isolate gyro range bits 2 to 0
     imu->gyrRangeBits2To0 = imu->gyrRange & 0x07;
 
-	// Clear DMA flags
-	imu->readingAcc = 0;
-	imu->readingGyr = 0;
+    // Clear DMA flags
+    imu->readingAcc = 0;
+    imu->readingGyr = 0;
 
-	uint8_t status = 1;
+    uint8_t status = 1;
 
     // Activate SPI Bus
     // ########################################################################
 
-	// BMI270 requires rising edge on Chip Select at start-up to activate SPI
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
-	HAL_Delay(50);
+    // BMI270 requires rising edge on Chip Select at start-up to activate SPI
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    HAL_Delay(10);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    HAL_Delay(50);
 
-	// Check chip ID
-	uint8_t chipID;
-	status &= BMI270_ReadRegister(imu, BMI270_CHIP_ID_ADDR, &chipID);
+    // Check chip ID
+    uint8_t chipID;
+    status &= BMI270_ReadRegister(imu, BMI270_CHIP_ID_ADDR, &chipID);
 
-	if (chipID != BMI270_CHIP_ID) 
+    if (chipID != BMI270_CHIP_ID)
     {
         return 2;
-	}
-	HAL_Delay(10);
+    }
+    HAL_Delay(10);
 
     // Perform Initialization Sequence (BMI270 datasheet page 18 or 25)
     // ########################################################################
 
-	// disable advanced power save mode
-	status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
-	HAL_Delay(10);
+    // disable advanced power save mode
+    status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
+    HAL_Delay(10);
 
     // prepare configuration load
     // This operation must NOT be performed more than once after POR or soft reset
-	status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_PREPARE);
-	HAL_Delay(10);
+    status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_PREPARE);
+    HAL_Delay(10);
 
     // create tx buffer to send the correct initialization data address to the sensor
     uint8_t txBuf[1] = {BMI_INIT_DATA_ADDR};
 
     // block write the config file
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
     status &= (HAL_SPI_Transmit(imu->spiHandle, txBuf, 1, HAL_MAX_DELAY) == HAL_OK);
-	status &= (HAL_SPI_Transmit(imu->spiHandle, (uint8_t*) bmi270_config_file, imu->configFileSize, HAL_MAX_DELAY) == HAL_OK);
-	while(HAL_SPI_GetState(imu->spiHandle) != HAL_SPI_STATE_READY);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    status &=
+        (HAL_SPI_Transmit(imu->spiHandle, (uint8_t*)bmi270_config_file, imu->configFileSize, HAL_MAX_DELAY) == HAL_OK);
+    while (HAL_SPI_GetState(imu->spiHandle) != HAL_SPI_STATE_READY)
+        ;
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
-    // can optionally block read the 8192 configuration file Bytes in from BMI_INIT_DATA_ADDR and compare to bmi270_config_file for correctness
+    // can optionally block read the 8192 configuration file Bytes in from BMI_INIT_DATA_ADDR and compare to
+    // bmi270_config_file for correctness
 
     // complete configuration load
-	status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_COMPLETE);
-	HAL_Delay(20);
+    status &= BMI270_WriteRegister(imu, BMI_INIT_CTRL_ADDR, BMI_INIT_CTRL_COMPLETE);
+    HAL_Delay(20);
     HAL_Delay(10);
 
     // Check if INTERNAL_STATUS.message has the "init_ok" value of 0x01
@@ -515,11 +514,11 @@ uint8_t BMI270_Init(BMI270 *imu,
     // isolate message bits 3 to 0
     internalStatusMessage = (internalStatusMessage & 0x0F);
 
-	if (internalStatusMessage != BMI_INTERNAL_STATUS_INIT_OK) 
+    if (internalStatusMessage != BMI_INTERNAL_STATUS_INIT_OK)
     {
         return 3;
-	}
-	HAL_Delay(10);
+    }
+    HAL_Delay(10);
 
     // Initialization has succeeded, BMI270 is now in "Configuration Mode"
     // Note: the BMI270 datasheet outlines 3 power plans from pages 20-22
@@ -527,191 +526,192 @@ uint8_t BMI270_Init(BMI270 *imu,
     // Configure the BMI270 for performance mode
     // ########################################################################
 
-	// Enable gyroscope, accelerometer, and temp sensor 
-	status &= BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, imu->pwrCtrl);
-	HAL_Delay(10);
+    // Enable gyroscope, accelerometer, and temp sensor
+    status &= BMI270_WriteRegister(imu, BMI_PWR_CTRL_ADDR, imu->pwrCtrl);
+    HAL_Delay(10);
 
-	// Configure accelerometer 
-	status &= BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, imu->accConf);
-	HAL_Delay(10);
-	status &= BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, imu->accRange);
-	HAL_Delay(10);
+    // Configure accelerometer
+    status &= BMI270_WriteRegister(imu, BMI_ACC_CONF_ADDR, imu->accConf);
+    HAL_Delay(10);
+    status &= BMI270_WriteRegister(imu, BMI_ACC_RANGE_ADDR, imu->accRange);
+    HAL_Delay(10);
 
-	// Configure gyroscope
-	status &= BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, imu->gyrConf);
-	HAL_Delay(10);
-	status &= BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, imu->gyrRange);
-	HAL_Delay(10);
+    // Configure gyroscope
+    status &= BMI270_WriteRegister(imu, BMI_GYR_CONF_ADDR, imu->gyrConf);
+    HAL_Delay(10);
+    status &= BMI270_WriteRegister(imu, BMI_GYR_RANGE_ADDR, imu->gyrRange);
+    HAL_Delay(10);
 
-	// Enable interrupt pin INT1
-	status &= BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, imu->int1IOConf);
-	HAL_Delay(10);
+    // Enable interrupt pin INT1
+    status &= BMI270_WriteRegister(imu, BMI_INT1_IO_CONF_ADDR, imu->int1IOConf);
+    HAL_Delay(10);
 
     // Map INT1 to data ready interrupt (applies for Accel and Gyro readings)
-	status &= BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, imu->int1Int2MapData);
-	HAL_Delay(10);
+    status &= BMI270_WriteRegister(imu, BMI_INT1_INT2_MAP_DATA_ADDR, imu->int1Int2MapData);
+    HAL_Delay(10);
 
-    // Disable Latching 
-	status &= BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, imu->intLatch);
-	HAL_Delay(10);
+    // Disable Latching
+    status &= BMI270_WriteRegister(imu, BMI_INT_LATCH_ADDR, imu->intLatch);
+    HAL_Delay(10);
 
-	// ensure advanced power save mode is disabled (should already be)
-	status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
-	HAL_Delay(10);
+    // ensure advanced power save mode is disabled (should already be)
+    status &= BMI270_WriteRegister(imu, BMI_PWR_CONF_ADDR, imu->pwrConf);
+    HAL_Delay(10);
 
     // ########################################################################
 
-	// Pre-compute accelerometer conversion constant (raw to m/s^2)
+    // Pre-compute accelerometer conversion constant (raw to m/s^2)
     // with the 2g range option, the conversion factor is 16384 LSB per g
-	imu->accConversion = EARTH_G_TO_METER_PER_SECOND * (pow(2.0f, imu->accRange + 1) / (2.0f * 16384.0f));
+    imu->accConversion = EARTH_G_TO_METER_PER_SECOND * (pow(2.0f, imu->accRange + 1) / (2.0f * 16384.0f));
 
-	// Pre-compute gyroscope conversion constant (raw to rad/s)
+    // Pre-compute gyroscope conversion constant (raw to rad/s)
     // with the 2000°/s (dps) range option, the conversion factor is 16384 LSB per dps
     imu->gyrConversion = DEGREES_TO_RADIANS * (1000 * 2.0f / (16384.0f * pow(2.0f, imu->gyrRangeBits2To0 + 1)));
 
-	// Set accelerometer TX buffer for DMA
-	imu->accTxBuf[0] = BMI_ACC_DATA_ADDR | 0x80;
+    // Set accelerometer TX buffer for DMA
+    imu->accTxBuf[0] = BMI_ACC_DATA_ADDR | 0x80;
 
-	// Set gyroscope TX buffer for DMA
-	imu->gyrTxBuf[0] = BMI_GYR_DATA_ADDR | 0x80;
+    // Set gyroscope TX buffer for DMA
+    imu->gyrTxBuf[0] = BMI_GYR_DATA_ADDR | 0x80;
 
-	return status;
+    return status;
 }
 
-uint8_t BMI270_ReadRegister(BMI270 *imu, uint8_t regAddr, uint8_t *data) 
+uint8_t BMI270_ReadRegister(BMI270* imu, uint8_t regAddr, uint8_t* data)
 {
-	uint8_t txBuf[3] = {regAddr | 0x80, 0x00, 0x00};
-	uint8_t rxBuf[3];
+    uint8_t txBuf[3] = {regAddr | 0x80, 0x00, 0x00};
+    uint8_t rxBuf[3];
 
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 3, HAL_MAX_DELAY) == HAL_OK);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 3, HAL_MAX_DELAY) == HAL_OK);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
-	if (status == 1)
+    if (status == 1)
     {
-		*data = rxBuf[2];
-	}
-	return status;
+        *data = rxBuf[2];
+    }
+    return status;
 }
 
-uint8_t BMI270_WriteRegister(BMI270 *imu, uint8_t regAddr, uint8_t data)
+uint8_t BMI270_WriteRegister(BMI270* imu, uint8_t regAddr, uint8_t data)
 {
-	uint8_t txBuf[2] = {regAddr, data};
+    uint8_t txBuf[2] = {regAddr, data};
 
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	uint8_t status = (HAL_SPI_Transmit(imu->spiHandle, txBuf, 2, HAL_MAX_DELAY) == HAL_OK);
-	while(HAL_SPI_GetState(imu->spiHandle) != HAL_SPI_STATE_READY);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    uint8_t status = (HAL_SPI_Transmit(imu->spiHandle, txBuf, 2, HAL_MAX_DELAY) == HAL_OK);
+    while (HAL_SPI_GetState(imu->spiHandle) != HAL_SPI_STATE_READY)
+        ;
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
-	return status;
+    return status;
 }
 
-uint8_t BMI270_ReadAccelerometer(BMI270 *imu)
+uint8_t BMI270_ReadAccelerometer(BMI270* imu)
 {
-	// Read raw accelerometer data
+    // Read raw accelerometer data
     //                  Register addr, 1 byte dummy, 6 bytes data
-	uint8_t txBuf[8] = {(BMI_ACC_DATA_ADDR | 0x80), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	uint8_t rxBuf[8];
+    uint8_t txBuf[8] = {(BMI_ACC_DATA_ADDR | 0x80), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint8_t rxBuf[8];
 
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 8, HAL_MAX_DELAY) == HAL_OK);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 8, HAL_MAX_DELAY) == HAL_OK);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
-	// Form signed 16-bit integers
-	int16_t accX = (int16_t) ((rxBuf[3] << 8) | rxBuf[2]);
-	int16_t accY = (int16_t) ((rxBuf[5] << 8) | rxBuf[4]);
-	int16_t accZ = (int16_t) ((rxBuf[7] << 8) | rxBuf[6]);
+    // Form signed 16-bit integers
+    int16_t accX = (int16_t)((rxBuf[3] << 8) | rxBuf[2]);
+    int16_t accY = (int16_t)((rxBuf[5] << 8) | rxBuf[4]);
+    int16_t accZ = (int16_t)((rxBuf[7] << 8) | rxBuf[6]);
 
-	// Convert to m/s^2
-	imu->acc_mps2[0] = imu->accConversion * accX;
-	imu->acc_mps2[1] = imu->accConversion * accY;
-	imu->acc_mps2[2] = imu->accConversion * accZ;
+    // Convert to m/s^2
+    imu->acc_mps2[0] = imu->accConversion * accX;
+    imu->acc_mps2[1] = imu->accConversion * accY;
+    imu->acc_mps2[2] = imu->accConversion * accZ;
 
-	return status;
+    return status;
 }
 
-uint8_t BMI270_ReadGyroscope(BMI270 *imu)
+uint8_t BMI270_ReadGyroscope(BMI270* imu)
 {
-	// Read raw gyroscope data
+    // Read raw gyroscope data
     //                  Register addr, 1 byte dummy, 6 bytes data
-	uint8_t txBuf[8] = {(BMI_GYR_DATA_ADDR | 0x80), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	uint8_t rxBuf[8];
+    uint8_t txBuf[8] = {(BMI_GYR_DATA_ADDR | 0x80), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint8_t rxBuf[8];
 
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 8, HAL_MAX_DELAY) == HAL_OK);
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    uint8_t status = (HAL_SPI_TransmitReceive(imu->spiHandle, txBuf, rxBuf, 8, HAL_MAX_DELAY) == HAL_OK);
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
 
-	// Form signed 16-bit integers
-	int16_t gyrX = (int16_t) ((rxBuf[3] << 8) | rxBuf[2]);
-	int16_t gyrY = (int16_t) ((rxBuf[5] << 8) | rxBuf[4]);
-	int16_t gyrZ = (int16_t) ((rxBuf[7] << 8) | rxBuf[6]);
+    // Form signed 16-bit integers
+    int16_t gyrX = (int16_t)((rxBuf[3] << 8) | rxBuf[2]);
+    int16_t gyrY = (int16_t)((rxBuf[5] << 8) | rxBuf[4]);
+    int16_t gyrZ = (int16_t)((rxBuf[7] << 8) | rxBuf[6]);
 
-	// Convert to rad/s
-	imu->gyr_rps[0] = imu->gyrConversion * gyrX;
-	imu->gyr_rps[1] = imu->gyrConversion * gyrY;
-	imu->gyr_rps[2] = imu->gyrConversion * gyrZ;
+    // Convert to rad/s
+    imu->gyr_rps[0] = imu->gyrConversion * gyrX;
+    imu->gyr_rps[1] = imu->gyrConversion * gyrY;
+    imu->gyr_rps[2] = imu->gyrConversion * gyrZ;
 
-	return status;
+    return status;
 }
 
-uint8_t BMI270_ReadAccelerometerDMA(BMI270 *imu)
+uint8_t BMI270_ReadAccelerometerDMA(BMI270* imu)
 {
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	if (HAL_SPI_TransmitReceive_DMA(imu->spiHandle, imu->accTxBuf, (uint8_t *) imu->accRxBuf, 8) == HAL_OK)
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    if (HAL_SPI_TransmitReceive_DMA(imu->spiHandle, imu->accTxBuf, (uint8_t*)imu->accRxBuf, 8) == HAL_OK)
     {
-		imu->readingAcc = 1;
-		return 1;
-	}
+        imu->readingAcc = 1;
+        return 1;
+    }
     else
     {
-		HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
-		return 0;
-	}
+        HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+        return 0;
+    }
 }
 
-void BMI270_ReadAccelerometerDMA_Complete(BMI270 *imu)
+void BMI270_ReadAccelerometerDMA_Complete(BMI270* imu)
 {
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
-	imu->readingAcc = 0;
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    imu->readingAcc = 0;
 
-	// Form signed 16-bit integers
-	int16_t accX = (int16_t) ((imu->accRxBuf[3] << 8) | imu->accRxBuf[2]);
-	int16_t accY = (int16_t) ((imu->accRxBuf[5] << 8) | imu->accRxBuf[4]);
-	int16_t accZ = (int16_t) ((imu->accRxBuf[7] << 8) | imu->accRxBuf[6]);
+    // Form signed 16-bit integers
+    int16_t accX = (int16_t)((imu->accRxBuf[3] << 8) | imu->accRxBuf[2]);
+    int16_t accY = (int16_t)((imu->accRxBuf[5] << 8) | imu->accRxBuf[4]);
+    int16_t accZ = (int16_t)((imu->accRxBuf[7] << 8) | imu->accRxBuf[6]);
 
-	// Convert to m/s^2
-	imu->acc_mps2[0] = imu->accConversion * accX;
-	imu->acc_mps2[1] = imu->accConversion * accY;
-	imu->acc_mps2[2] = imu->accConversion * accZ;
+    // Convert to m/s^2
+    imu->acc_mps2[0] = imu->accConversion * accX;
+    imu->acc_mps2[1] = imu->accConversion * accY;
+    imu->acc_mps2[2] = imu->accConversion * accZ;
 }
 
-uint8_t BMI270_ReadGyroscopeDMA(BMI270 *imu)
+uint8_t BMI270_ReadGyroscopeDMA(BMI270* imu)
 {
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
-	if (HAL_SPI_TransmitReceive_DMA(imu->spiHandle, imu->gyrTxBuf, (uint8_t *) imu->gyrRxBuf, 8) == HAL_OK)
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_RESET);
+    if (HAL_SPI_TransmitReceive_DMA(imu->spiHandle, imu->gyrTxBuf, (uint8_t*)imu->gyrRxBuf, 8) == HAL_OK)
     {
-		imu->readingGyr = 1;
-		return 1;
-	}
+        imu->readingGyr = 1;
+        return 1;
+    }
     else
     {
-		HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
-		return 0;
-	}
+        HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+        return 0;
+    }
 }
 
-void BMI270_ReadGyroscopeDMA_Complete(BMI270 *imu)
+void BMI270_ReadGyroscopeDMA_Complete(BMI270* imu)
 {
-	HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
-	imu->readingGyr = 0;
+    HAL_GPIO_WritePin(imu->chipSelectPinBank, imu->chipSelectPin, GPIO_PIN_SET);
+    imu->readingGyr = 0;
 
-	// Form signed 16-bit integers
-	int16_t gyrX = (int16_t) ((imu->gyrRxBuf[3] << 8) | imu->gyrRxBuf[2]);
-	int16_t gyrY = (int16_t) ((imu->gyrRxBuf[5] << 8) | imu->gyrRxBuf[4]);
-	int16_t gyrZ = (int16_t) ((imu->gyrRxBuf[7] << 8) | imu->gyrRxBuf[6]);
+    // Form signed 16-bit integers
+    int16_t gyrX = (int16_t)((imu->gyrRxBuf[3] << 8) | imu->gyrRxBuf[2]);
+    int16_t gyrY = (int16_t)((imu->gyrRxBuf[5] << 8) | imu->gyrRxBuf[4]);
+    int16_t gyrZ = (int16_t)((imu->gyrRxBuf[7] << 8) | imu->gyrRxBuf[6]);
 
-	// Convert to deg/s
-	imu->gyr_rps[0] = imu->gyrConversion * gyrX;
-	imu->gyr_rps[1] = imu->gyrConversion * gyrY;
-	imu->gyr_rps[2] = imu->gyrConversion * gyrZ;
+    // Convert to deg/s
+    imu->gyr_rps[0] = imu->gyrConversion * gyrX;
+    imu->gyr_rps[1] = imu->gyrConversion * gyrY;
+    imu->gyr_rps[2] = imu->gyrConversion * gyrZ;
 }

@@ -44,7 +44,7 @@
  * @param hspi: SPI handle pointer
  * @retval None
  */
-void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI1)
@@ -55,10 +55,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
         // Enable Peripheral GPIO clock
         SPI1_GPIO_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = SPI1_SCK | SPI1_MISO | SPI1_MOSI;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Pin       = SPI1_SCK | SPI1_MISO | SPI1_MOSI;
+        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull      = GPIO_NOPULL;
+        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
         HAL_GPIO_Init(SPI1_GPIO_PORT, &GPIO_InitStruct);
     }
@@ -71,17 +71,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
         SPI2_GPIO_CLK_ENABLE()
         SPI2_GPIO_CLK_ENABLE_2()
 
-        GPIO_InitStruct.Pin = SPI2_SCK;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Pin       = SPI2_SCK;
+        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull      = GPIO_NOPULL;
+        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(SPI2_GPIO_PORT, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = SPI2_MISO | SPI2_MOSI;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Pin       = SPI2_MISO | SPI2_MOSI;
+        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull      = GPIO_NOPULL;
+        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(SPI2_GPIO_PORT_2, &GPIO_InitStruct);
     }
@@ -93,7 +93,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
  * @param hspi: SPI handle pointer
  * @retval None
  */
-void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 {
     if (hspi->Instance == SPI1)
     {
@@ -121,7 +121,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
  * @param huart: UART handle pointer
  * @retval None
  */
-void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -135,16 +135,16 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 
     /*##-2- Configure peripheral GPIO ##########################################*/
     /* UART TX GPIO pin configuration  */
-    GPIO_InitStruct.Pin = USARTx_TX_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+    GPIO_InitStruct.Pin       = USARTx_TX_PIN;
+    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull      = GPIO_NOPULL;
+    GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
     GPIO_InitStruct.Alternate = USARTx_TX_AF;
 
     HAL_GPIO_Init(USARTx_TX_GPIO_PORT, &GPIO_InitStruct);
 
     /* UART RX GPIO pin configuration  */
-    GPIO_InitStruct.Pin = USARTx_RX_PIN;
+    GPIO_InitStruct.Pin       = USARTx_RX_PIN;
     GPIO_InitStruct.Alternate = USARTx_RX_AF;
 
     HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
@@ -163,7 +163,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
  * @param huart: UART handle pointer
  * @retval None
  */
-void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
     /*##-1- Reset peripherals ##################################################*/
     USARTx_FORCE_RESET();

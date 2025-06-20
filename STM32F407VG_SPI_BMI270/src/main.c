@@ -117,6 +117,12 @@ int main(void)
     }
     // use HAL_TIM_PeriodElapsedCallback with HAL_TIM_Base_Start_IT to run a callback at a specific interval
 
+    while (1)
+    {
+        HAL_Delay(1000);
+        BSP_LED_Toggle(LED4);
+    }
+
     // Initialize SPI1
     hspi1.Instance = SPI1;
     SPI_Init(&hspi1);

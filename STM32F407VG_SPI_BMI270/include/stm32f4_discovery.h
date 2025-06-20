@@ -74,10 +74,10 @@ extern "C"
 
 #define LEDn 4
 
-#define LED4_PIN                GPIO_PIN_12
-#define LED4_GPIO_PORT          GPIOD
-#define LED4_GPIO_CLK_ENABLE()  __HAL_RCC_GPIOD_CLK_ENABLE()
-#define LED4_GPIO_CLK_DISABLE() __HAL_RCC_GPIOD_CLK_DISABLE()
+#define LED4_PIN                GPIO_PIN_1
+#define LED4_GPIO_PORT          GPIOC
+#define LED4_GPIO_CLK_ENABLE()  __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED4_GPIO_CLK_DISABLE() __HAL_RCC_GPIOC_CLK_DISABLE()
 
 #define LED3_PIN                GPIO_PIN_13
 #define LED3_GPIO_PORT          GPIOD

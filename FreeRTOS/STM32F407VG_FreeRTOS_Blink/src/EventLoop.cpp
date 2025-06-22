@@ -3,8 +3,7 @@
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
 // #include "stm32f4xx_hal.h"
 #include "main.h"   // Include main header for HAL and GPIO definitions
-// #include "CppLedBlink.hpp"
-// #include "CppBlinkPinout.hpp"
+// #include "CppBlinkPinout.hpp" // might delete later
 #include "GpioPin.hpp"
 
 /* Definitions for neoBlink */

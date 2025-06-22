@@ -3,6 +3,9 @@
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
 // #include "stm32f4xx_hal.h"
 #include "main.h"   // Include main header for HAL and GPIO definitions
+// #include "CppLedBlink.hpp"
+// #include "CppBlinkPinout.hpp"
+#include "GpioPin.hpp"
 
 /* Definitions for neoBlink */
 osThreadId_t neoBlinkHandle;
@@ -105,20 +108,18 @@ extern "C"
 /* USER CODE END Header_StartBlink1 */
 void StartBlink1(void *argument)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
+  GpioPin led1(LED1_Pin, GPIOD);
+
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOD, LED1_Pin, GPIO_PIN_SET);
+    led1.Set();
     osDelay(10);
-	HAL_GPIO_WritePin(GPIOD, LED1_Pin, GPIO_PIN_RESET);
-	osDelay(4990);
+    led1.Reset();
+    osDelay(4990);
   }
 
   // In case we accidentally exit from the task loop
   osThreadTerminate(NULL);
-
-  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartBlink2 */
@@ -130,20 +131,18 @@ void StartBlink1(void *argument)
 /* USER CODE END Header_StartBlink2 */
 void StartBlink2(void *argument)
 {
-  /* USER CODE BEGIN StartBlink2 */
-  /* Infinite loop */
+  GpioPin led2(LED2_Pin, GPIOD);
+
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOD, LED2_Pin, GPIO_PIN_SET);
+    led2.Set();
     osDelay(10);
-    HAL_GPIO_WritePin(GPIOD, LED2_Pin, GPIO_PIN_RESET);
+    led2.Reset();
     osDelay(9990);
   }
 
   // In case we accidentally exit from the task loop
   osThreadTerminate(NULL);
-
-  /* USER CODE END StartBlink2 */
 }
 
 /* USER CODE BEGIN Header_StartBlink3 */
@@ -155,20 +154,18 @@ void StartBlink2(void *argument)
 /* USER CODE END Header_StartBlink3 */
 void StartBlink3(void *argument)
 {
-  /* USER CODE BEGIN StartBlink3 */
-  /* Infinite loop */
+  GpioPin led3(LED3_Pin, GPIOD);
+
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOD, LED3_Pin, GPIO_PIN_SET);
+    led3.Set();
     osDelay(10);
-    HAL_GPIO_WritePin(GPIOD, LED3_Pin, GPIO_PIN_RESET);
+    led3.Reset();
     osDelay(49990);
   }
 
   // In case we accidentally exit from the task loop
   osThreadTerminate(NULL);
-
-  /* USER CODE END StartBlink3 */
 }
 
 /* USER CODE BEGIN Header_StartBlink4 */
@@ -180,20 +177,18 @@ void StartBlink3(void *argument)
 /* USER CODE END Header_StartBlink4 */
 void StartBlink4(void *argument)
 {
-  /* USER CODE BEGIN StartBlink4 */
-  /* Infinite loop */
+  GpioPin led4(LED4_Pin, GPIOD);
+
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_SET);
+    led4.Set();
     osDelay(10);
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_RESET);
+    led4.Reset();
     osDelay(99990);
   }
 
   // In case we accidentally exit from the task loop
   osThreadTerminate(NULL);
-
-  /* USER CODE END StartBlink4 */
 }
 
 /* USER CODE BEGIN Header_StartNeoBlink */
@@ -205,19 +200,17 @@ void StartBlink4(void *argument)
 /* USER CODE END Header_StartNeoBlink */
 void StartNeoBlink(void *argument)
 {
-  /* USER CODE BEGIN StartNeoBlink */
-  /* Infinite loop */
+  GpioPin led4(LED4_Pin, GPIOD);
+
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_SET);
+    led4.Set();
     osDelay(10);
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_RESET);
+    led4.Reset();
     osDelay(9990);
   }
 
   // In case we accidentally exit from the task loop
   osThreadTerminate(NULL);
-
-  /* USER CODE END StartBlink4 */
 }
 

@@ -76,14 +76,6 @@ const osThreadAttr_t blink4_attributes = {
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 
-/* Definitions for neoBlink */
-osThreadId_t neoBlinkHandle;
-const osThreadAttr_t neoBlink_attributes = {
-  .name = "neoBlink",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
-};
-
 /* USER CODE BEGIN PV */
 volatile uint32_t timerOverflow = 0;
 
@@ -97,7 +89,6 @@ void StartBlink1(void *argument);
 void StartBlink2(void *argument);
 void StartBlink3(void *argument);
 void StartBlink4(void *argument);
-void StartNeoBlink(void *argument);
 
 /* USER CODE BEGIN PFP */
 uint32_t ReadHardwareTimer()
@@ -199,9 +190,6 @@ int main(void)
   /* creation of blink4 */
   blink4Handle = osThreadNew(StartBlink4, NULL, &blink4_attributes);
 
-  /* creation of neoBlink */
-  neoBlinkHandle = osThreadNew(StartNeoBlink, NULL, &neoBlink_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -210,12 +198,10 @@ int main(void)
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
-  // TODO move this to a different spot so that threads can run
-  // or call osKernelStart() in EventLoopC()
   EventLoopC();
 
-  /* Start scheduler */
-//   osKernelStart();
+  // moved to EventLoop()
+  // osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -244,19 +230,6 @@ void SystemClock_Config(void)
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  // TODO remove this section when ready
-//   /** Initializes the RCC Oscillators according to the specified parameters
-//   * in the RCC_OscInitTypeDef structure.
-//   */
-//   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-//   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-//   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-//   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-//   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-//   {
-//     Error_Handler();
-//   }
-
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
@@ -270,20 +243,6 @@ void SystemClock_Config(void)
     {
         Error_Handler();
     }
-
-  // TODO remove this section when ready
-//   /** Initializes the CPU, AHB and APB buses clocks
-//   */
-//   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-//                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-//   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-//   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-//   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-//   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-//   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-//   {
-//     Error_Handler();
-//   }
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
        clocks dividers */
@@ -445,31 +404,6 @@ void StartBlink3(void *argument)
 void StartBlink4(void *argument)
 {
   /* USER CODE BEGIN StartBlink4 */
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_SET);
-    osDelay(10);
-    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_RESET);
-    osDelay(99990);
-  }
-
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
-
-  /* USER CODE END StartBlink4 */
-}
-
-/* USER CODE BEGIN Header_StartNeoBlink */
-/**
-* @brief Function implementing the neoBlink thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartNeoBlink */
-void StartNeoBlink(void *argument)
-{
-  /* USER CODE BEGIN StartNeoBlink */
   /* Infinite loop */
   for(;;)
   {

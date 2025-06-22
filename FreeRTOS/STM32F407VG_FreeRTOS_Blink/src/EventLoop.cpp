@@ -1,11 +1,24 @@
 #include "EventLoop.hpp"
-// #include "main.h"
 #include "Adafruit_NeoPixel.hpp"
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
+// #include "stm32f4xx_hal.h"
+#include "main.h"   // Include main header for HAL and GPIO definitions
+
+/* Definitions for neoBlink */
+osThreadId_t neoBlinkHandle;
+const osThreadAttr_t neoBlink_attributes = {
+  .name = "neoBlink",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
+void StartNeoBlink(void *argument);
 
 // Main Cpp event loop to run application
 void EventLoopCpp()
 {
+    /* creation of neoBlink */
+    neoBlinkHandle = osThreadNew(StartNeoBlink, NULL, &neoBlink_attributes);
+
     osKernelStart();
 
     // Your init code here
@@ -34,5 +47,28 @@ extern "C"
     }
 }
 
+/* USER CODE BEGIN Header_StartNeoBlink */
+/**
+* @brief Function implementing the neoBlink thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartNeoBlink */
+void StartNeoBlink(void *argument)
+{
+  /* USER CODE BEGIN StartNeoBlink */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_SET);
+    osDelay(10);
+    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_RESET);
+    osDelay(9990);
+  }
 
+  // In case we accidentally exit from the task loop
+  osThreadTerminate(NULL);
+
+  /* USER CODE END StartBlink4 */
+}
 

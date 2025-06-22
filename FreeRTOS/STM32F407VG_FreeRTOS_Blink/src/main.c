@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "EventLoop.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,6 +69,13 @@ const osThreadAttr_t blink4_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
+/* Definitions for neoBlink */
+osThreadId_t neoBlinkHandle;
+const osThreadAttr_t neoBlink_attributes = {
+  .name = "neoBlink",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -80,6 +87,7 @@ void StartBlink1(void *argument);
 void StartBlink2(void *argument);
 void StartBlink3(void *argument);
 void StartBlink4(void *argument);
+void StartNeoBlink(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -155,6 +163,9 @@ int main(void)
   /* creation of blink4 */
   blink4Handle = osThreadNew(StartBlink4, NULL, &blink4_attributes);
 
+  /* creation of neoBlink */
+  neoBlinkHandle = osThreadNew(StartNeoBlink, NULL, &neoBlink_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -162,6 +173,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
+
+  // TODO move this to a different spot so that threads can run
+  // or call osKernelStart() in EventLoopC()
+  EventLoopC();
 
   /* Start scheduler */
   osKernelStart();
@@ -339,6 +354,31 @@ void StartBlink3(void *argument)
 void StartBlink4(void *argument)
 {
   /* USER CODE BEGIN StartBlink4 */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_SET);
+    osDelay(10);
+    HAL_GPIO_WritePin(GPIOD, LED4_Pin, GPIO_PIN_RESET);
+    osDelay(99990);
+  }
+
+  // In case we accidentally exit from the task loop
+  osThreadTerminate(NULL);
+
+  /* USER CODE END StartBlink4 */
+}
+
+/* USER CODE BEGIN Header_StartNeoBlink */
+/**
+* @brief Function implementing the neoBlink thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartNeoBlink */
+void StartNeoBlink(void *argument)
+{
+  /* USER CODE BEGIN StartNeoBlink */
   /* Infinite loop */
   for(;;)
   {

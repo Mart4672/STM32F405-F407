@@ -41,6 +41,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+TIM_HandleTypeDef htim5;
+
 /* Definitions for blink1 */
 osThreadId_t blink1Handle;
 const osThreadAttr_t blink1_attributes = {
@@ -48,6 +51,7 @@ const osThreadAttr_t blink1_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+
 /* Definitions for blink2 */
 osThreadId_t blink2Handle;
 const osThreadAttr_t blink2_attributes = {
@@ -55,6 +59,7 @@ const osThreadAttr_t blink2_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+
 /* Definitions for blink3 */
 osThreadId_t blink3Handle;
 const osThreadAttr_t blink3_attributes = {
@@ -62,6 +67,7 @@ const osThreadAttr_t blink3_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
 /* Definitions for blink4 */
 osThreadId_t blink4Handle;
 const osThreadAttr_t blink4_attributes = {
@@ -69,6 +75,7 @@ const osThreadAttr_t blink4_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
+
 /* Definitions for neoBlink */
 osThreadId_t neoBlinkHandle;
 const osThreadAttr_t neoBlink_attributes = {
@@ -76,13 +83,16 @@ const osThreadAttr_t neoBlink_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+
 /* USER CODE BEGIN PV */
+volatile uint32_t timerOverflow = 0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM5_Init(void);
 void StartBlink1(void *argument);
 void StartBlink2(void *argument);
 void StartBlink3(void *argument);
@@ -90,6 +100,18 @@ void StartBlink4(void *argument);
 void StartNeoBlink(void *argument);
 
 /* USER CODE BEGIN PFP */
+uint32_t ReadHardwareTimer()
+{
+    uint32_t count = htim5.Instance->CNT;
+    // Alternative way to read the timer count
+    // uint32_t count = __HAL_TIM_GET_COUNTER(&htim5);
+    return count;
+}
+
+uint32_t ReadTimerOverflow()
+{
+    return timerOverflow;
+}
 
 /* USER CODE END PFP */
 
@@ -122,6 +144,20 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+
+    // configure timer 5 (32 bit timer)
+    // see STM32 DS8626 - Section 3.0.21 - Table 4. Timer feature comparison
+    __HAL_RCC_TIM5_CLK_ENABLE();
+    MX_TIM5_Init();
+    // start timer 5
+    if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    // use HAL_TIM_PeriodElapsedCallback with HAL_TIM_Base_Start_IT to run a callback at a specific interval
+    // use HAL_TIM_Base_Start when not using the callback
+
+    InitializeInterface(ReadHardwareTimer, ReadTimerOverflow);
 
   /* USER CODE END SysInit */
 
@@ -179,7 +215,7 @@ int main(void)
   EventLoopC();
 
   /* Start scheduler */
-  osKernelStart();
+//   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -208,31 +244,86 @@ void SystemClock_Config(void)
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  // TODO remove this section when ready
+//   /** Initializes the RCC Oscillators according to the specified parameters
+//   * in the RCC_OscInitTypeDef structure.
+//   */
+//   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+//   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+//   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+//   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+//   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+//   {
+//     Error_Handler();
+//   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    /* Enable HSE Oscillator and activate PLL with HSE as source */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM       = 8;
+    RCC_OscInitStruct.PLL.PLLN       = 336;
+    RCC_OscInitStruct.PLL.PLLP       = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ       = 7;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  // TODO remove this section when ready
+//   /** Initializes the CPU, AHB and APB buses clocks
+//   */
+//   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+//                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+//   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+//   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+//   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+//   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+//   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+//   {
+//     Error_Handler();
+//   }
+
+    /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+       clocks dividers */
+    RCC_ClkInitStruct.ClockType =
+        (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    /* STM32F405x/407x/415x/417x Revision Z and upper devices: prefetch is supported  */
+    if (HAL_GetREVID() >= 0x1001)
+    {
+        /* Enable the Flash prefetch */
+        __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    }
+}
+
+/**
+ * @brief TIM5 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM5_Init(void)
+{
+    htim5.Instance               = TIM5;
+    // set the timer prescaler to PLLN/PLLP
+    htim5.Init.Prescaler         = 84 - 1; // (HAL_RCC_GetPCLK1Freq()/2) / 1000000 - 1
+    htim5.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    htim5.Init.Period            = 4294967295;
+    htim5.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /**
@@ -405,6 +496,8 @@ void StartNeoBlink(void *argument)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
+    /* Prevent unused argument(s) compilation warning */
+    UNUSED(htim);
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM6)
@@ -412,6 +505,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+    // Ensure that it was timer 5 that interrupted
+    if(htim == &htim5)
+    {
+        timerOverflow++;
+    }
 
   /* USER CODE END Callback 1 */
 }

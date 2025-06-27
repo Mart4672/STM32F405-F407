@@ -3,8 +3,24 @@
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
 // #include "stm32f4xx_hal.h"
 #include "main.h"   // Include main header for HAL and GPIO definitions
-// #include "CppBlinkPinout.hpp" // might delete later
+// #include "CppBlinkPinout.hpp" // TODO delete later if not needed
 #include "GpioPin.hpp"
+#include "CppTimerManager.hpp"
+
+// Blink 1 Task Period in microseconds
+constexpr uint32_t blink1TaskPeriod = 5'000'000;
+
+// Blink 2 Task Period in microseconds
+constexpr uint32_t blink2TaskPeriod = 10'000'000;
+
+// Blink 3 Task Period in microseconds
+constexpr uint32_t blink3TaskPeriod = 50'000'000;
+
+// Blink 4 Task Period in microseconds
+constexpr uint32_t blink4TaskPeriod = 100'000'000;
+
+// NeoPixel Blink Task Period in microseconds
+constexpr uint32_t neoBlinkTaskPeriod = 100'000'000;
 
 /* Definitions for neoBlink */
 osThreadId_t neoBlinkHandle;
@@ -51,6 +67,11 @@ const osThreadAttr_t blink4_attributes = {
 };
 void StartBlink4(void *argument);
 
+// Global timer manager instance
+CppTimerManager timerManager = CppTimerManager();
+
+// TODO update the NeoPixel library to use the timer class
+
 // Main Cpp event loop to run application
 void EventLoopCpp()
 {
@@ -95,6 +116,8 @@ extern "C"
         * class where they would be used to calculate the ongoing system 
         * time from system startup. 
         */
+        timerManager.setHWTimerCountFunction(readHwTimer);
+        timerManager.setHWTimerOverflowFunction(readTimerOverFlow);
     }
 }
 
@@ -107,18 +130,30 @@ extern "C"
 /* USER CODE END Header_StartBlink1 */
 void StartBlink1(void *argument)
 {
-  GpioPin led1(LED1_Pin, GPIOD);
+    // setup
+    GpioPin led1(LED1_Pin, GPIOD);
+    uint32_t blink1Time = timerManager.getHWTimerCount();
+    // TODO add logic for dealing with overflow
+    // uint32_t blink1Overflow = timerManager.getHWTimerOverflow();
 
-  for(;;)
-  {
-    led1.Set();
-    osDelay(10);
-    led1.Reset();
-    osDelay(4990);
-  }
+    // inifinite loop
+    while(true)
+    {
+        if((timerManager.getHWTimerCount() - blink1Time) >= blink1TaskPeriod)
+        {
+            // Reset the timer
+            blink1Time = timerManager.getHWTimerCount();
+            // blink the LED
+            led1.Set();
+            osDelay(10);
+            led1.Reset();
+        }
+        // Yield to allow other tasks to run
+        osDelay(1);
+    }
 
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
+    // In case we accidentally exit from the task loop
+    osThreadTerminate(NULL);
 }
 
 /* USER CODE BEGIN Header_StartBlink2 */
@@ -130,18 +165,29 @@ void StartBlink1(void *argument)
 /* USER CODE END Header_StartBlink2 */
 void StartBlink2(void *argument)
 {
-  GpioPin led2(LED2_Pin, GPIOD);
+    GpioPin led2(LED2_Pin, GPIOD);
+    uint32_t blink2Time = timerManager.getHWTimerCount();
+    // TODO add logic for dealing with overflow
+    // uint32_t blink2Overflow = timerManager.getHWTimerOverflow();
 
-  for(;;)
-  {
-    led2.Set();
-    osDelay(10);
-    led2.Reset();
-    osDelay(9990);
-  }
+    // inifinite loop
+    while(true)
+    {
+        if((timerManager.getHWTimerCount() - blink2Time) >= blink2TaskPeriod)
+        {
+            // Reset the timer
+            blink2Time = timerManager.getHWTimerCount();
+            // blink the LED
+            led2.Set();
+            osDelay(10);
+            led2.Reset();
+        }
+        // Yield to allow other tasks to run
+        osDelay(1);
+    }
 
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
+    // In case we accidentally exit from the task loop
+    osThreadTerminate(NULL);
 }
 
 /* USER CODE BEGIN Header_StartBlink3 */
@@ -153,18 +199,29 @@ void StartBlink2(void *argument)
 /* USER CODE END Header_StartBlink3 */
 void StartBlink3(void *argument)
 {
-  GpioPin led3(LED3_Pin, GPIOD);
+    GpioPin led3(LED3_Pin, GPIOD);
+    uint32_t blink3Time = timerManager.getHWTimerCount();
+    // TODO add logic for dealing with overflow
+    // uint32_t blink3Overflow = timerManager.getHWTimerOverflow();
 
-  for(;;)
-  {
-    led3.Set();
-    osDelay(10);
-    led3.Reset();
-    osDelay(49990);
-  }
+    // inifinite loop
+    while(true)
+    {
+        if((timerManager.getHWTimerCount() - blink3Time) >= blink3TaskPeriod)
+        {
+            // Reset the timer
+            blink3Time = timerManager.getHWTimerCount();
+            // blink the LED
+            led3.Set();
+            osDelay(10);
+            led3.Reset();
+        }
+        // Yield to allow other tasks to run
+        osDelay(1);
+    }
 
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
+    // In case we accidentally exit from the task loop
+    osThreadTerminate(NULL);
 }
 
 /* USER CODE BEGIN Header_StartBlink4 */
@@ -176,18 +233,29 @@ void StartBlink3(void *argument)
 /* USER CODE END Header_StartBlink4 */
 void StartBlink4(void *argument)
 {
-  GpioPin led4(LED4_Pin, GPIOD);
+    GpioPin led4(LED4_Pin, GPIOD);
+    uint32_t blink4Time = timerManager.getHWTimerCount();
+    // TODO add logic for dealing with overflow
+    // uint32_t blink4Overflow = timerManager.getHWTimerOverflow();
 
-  for(;;)
-  {
-    led4.Set();
-    osDelay(10);
-    led4.Reset();
-    osDelay(99990);
-  }
+    // inifinite loop
+    while(true)
+    {
+        if((timerManager.getHWTimerCount() - blink4Time) >= blink4TaskPeriod)
+        {
+            // Reset the timer
+            blink4Time = timerManager.getHWTimerCount();
+            // blink the LED
+            led4.Set();
+            osDelay(10);
+            led4.Reset();
+        }
+        // Yield to allow other tasks to run
+        osDelay(1);
+    }
 
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
+    // In case we accidentally exit from the task loop
+    osThreadTerminate(NULL);
 }
 
 /* USER CODE BEGIN Header_StartNeoBlink */
@@ -199,17 +267,29 @@ void StartBlink4(void *argument)
 /* USER CODE END Header_StartNeoBlink */
 void StartNeoBlink(void *argument)
 {
-  GpioPin led4(LED4_Pin, GPIOD);
+    // TODO define the neoPixels
+    // GpioPin led4(LED4_Pin, GPIOD);
+    uint32_t neoBlinkTime = timerManager.getHWTimerCount();
+    // TODO add logic for dealing with overflow
+    // uint32_t neoBlinkOverflow = timerManager.getHWTimerOverflow();
 
-  for(;;)
-  {
-    led4.Set();
-    osDelay(10);
-    led4.Reset();
-    osDelay(9990);
-  }
+    // inifinite loop
+    while(true)
+    {
+        if((timerManager.getHWTimerCount() - neoBlinkTime) >= neoBlinkTaskPeriod)
+        {
+            // Reset the timer
+            neoBlinkTime = timerManager.getHWTimerCount();
+            // blink the neoPixel
+            osDelay(1000);
+            // led4.Set();
+            // osDelay(10);
+            // led4.Reset();
+        }
+        // Yield to allow other tasks to run
+        osDelay(1);
+    }
 
-  // In case we accidentally exit from the task loop
-  osThreadTerminate(NULL);
+    // In case we accidentally exit from the task loop
+    osThreadTerminate(NULL);
 }
-

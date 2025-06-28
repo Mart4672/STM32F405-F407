@@ -134,11 +134,53 @@ void StartBlink1(void *argument)
     GpioPin led1(LED1_Pin, GPIOD);
     uint32_t blink1Time = timerManager.getHWTimerCount();
     // TODO add logic for dealing with overflow
-    // uint32_t blink1Overflow = timerManager.getHWTimerOverflow();
+    uint32_t blink1Overflow = timerManager.getHWTimerOverflow();
 
     // inifinite loop
     while(true)
     {
+        // /*
+        // Option 1 - detect rollover and delay the task unconditionally even if the timer only rolled over once
+        // Not desirable for tasks that always need to run at a specific rate
+        uint32_t now1 = timerManager.getHWTimerCount();
+        // Can choose one of the following blocks
+        if (blink1Time > now1) {
+            // Reset the task timer
+            blink1Time = now1;
+        }
+        // OR
+        if (timerManager.getHWTimerOverflow() > blink1Overflow)
+        {
+            blink1Overflow = timerManager.getHWTimerOverflow();
+            // Reset the task timer
+            blink1Time = now1;
+        }
+        // */
+
+        // Option 2 - detect rollover and only delay the task if the timer rolled over more than once
+        // This is the preferred option for tasks that need to run at a specific rate
+        uint32_t now = timerManager.getHWTimerCount();
+        if ((timerManager.getHWTimerOverflow() - blink1Overflow) == 1)
+        {
+            blink1Overflow = timerManager.getHWTimerOverflow();
+            // If there has only been 1 new timer rollover, no action is needed
+            // since the timer values in the "Task Wait Period Elapsed Check"
+            // will still be valid for the next check.
+            // Ex:
+            // uint32_t (0 - 4,294,967,295) = uint32_t (1) = 1
+            // Ex:
+            // uint32_t (100 - 4,294,967,195) = uint32_t (100 + 101) = 201
+        }
+        else if (timerManager.getHWTimerOverflow() > blink1Overflow)
+        {
+            blink1Overflow = timerManager.getHWTimerOverflow();
+            // Reset the task timer if there have been multiple rollovers
+            // since the subtraction in the "Task Wait Period Elapsed Check"
+            // will not be valid anymore.
+            blink1Time = now;
+        }
+
+        // Task Wait Period Elapsed Check
         if((timerManager.getHWTimerCount() - blink1Time) >= blink1TaskPeriod)
         {
             // Reset the timer

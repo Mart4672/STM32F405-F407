@@ -133,31 +133,12 @@ void StartBlink1(void *argument)
     // setup
     GpioPin led1(LED1_Pin, GPIOD);
     uint32_t blink1Time = timerManager.getHWTimerCount();
-    // TODO add logic for dealing with overflow
     uint32_t blink1Overflow = timerManager.getHWTimerOverflow();
 
     // inifinite loop
     while(true)
     {
-        // /*
-        // Option 1 - detect rollover and delay the task unconditionally even if the timer only rolled over once
-        // Not desirable for tasks that always need to run at a specific rate
-        uint32_t now1 = timerManager.getHWTimerCount();
-        // Can choose one of the following blocks
-        if (blink1Time > now1) {
-            // Reset the task timer
-            blink1Time = now1;
-        }
-        // OR
-        if (timerManager.getHWTimerOverflow() > blink1Overflow)
-        {
-            blink1Overflow = timerManager.getHWTimerOverflow();
-            // Reset the task timer
-            blink1Time = now1;
-        }
-        // */
-
-        // Option 2 - detect rollover and only delay the task if the timer rolled over more than once
+        // Detect rollover and only delay the task if the timer rolled over more than once
         // This is the preferred option for tasks that need to run at a specific rate
         uint32_t now = timerManager.getHWTimerCount();
         if ((timerManager.getHWTimerOverflow() - blink1Overflow) == 1)

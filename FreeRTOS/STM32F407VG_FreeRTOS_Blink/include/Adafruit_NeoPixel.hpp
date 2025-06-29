@@ -61,7 +61,21 @@
 #include "rp2040_pio.h"
 #endif
 
+#include <stdlib.h>
 #include <stdint.h>
+#include <functional>
+#include <string.h>
+#include <cctype>
+
+// TODO remove this include?
+// if setting micros works as intended
+#include "CppTimerManager.hpp"
+
+// TODO include HAL
+// TODO assign HAL functions in a similar way to micros?
+#include "stm32f4xx_hal.h"
+
+#include "GpioPin.hpp"
 
 // The order of primary colors in the NeoPixel data stream can vary among
 // device types, manufacturers and even different revisions of the same
@@ -228,15 +242,18 @@ extern "C" void espInit();
 class Adafruit_NeoPixel {
 
 public:
-  // Constructor: number of LEDs, pin number, LED type
-  Adafruit_NeoPixel(uint16_t n, int16_t pin = 6,
-                    neoPixelType type = NEO_GRB + NEO_KHZ800);
-  Adafruit_NeoPixel(void);
-  ~Adafruit_NeoPixel();
+    // Constructor: number of LEDs, GpioPin, LED type
+    Adafruit_NeoPixel(uint16_t n, GpioPin neoPixelPin, neoPixelType type = NEO_GRB + NEO_KHZ800);
+    // TODO remove deprecated constructor when ready
+    //   Adafruit_NeoPixel(void);
+    ~Adafruit_NeoPixel();
+
+    // Function pointer to read hardware timer
+    std::function<uint32_t()> micros;
 
   bool begin(void);
   void show(void);
-  void setPin(int16_t p);
+  void setPin(GpioPin newNeoPixelPin);
   void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
   void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
   void setPixelColor(uint16_t n, uint32_t c);
@@ -274,10 +291,8 @@ public:
     // stall for 30+ minutes, or having to document and frequently remind
     // and/or provide tech support explaining an unintuitive need for
     // show() calls at least once an hour.
-    
-    // TODO set up a hardware timer for updating now
-    // uint32_t now = micros();
-    uint32_t now = 0; // Placeholder for actual time retrieval logic
+
+    uint32_t now = micros();
     if (endTime > now) {
       endTime = now;
     }
@@ -406,6 +421,8 @@ protected:
   bool is800KHz; ///< true if 800 KHz pixels
 #endif
 
+    // GPIO pin used for NeoPixel data output
+    GpioPin mNeoPixelPin;
   bool begun;         ///< true if begin() previously called successfully
   uint16_t numLEDs;   ///< Number of RGB LEDs in strip
   uint16_t numBytes;  ///< Size of 'pixels' buffer below
@@ -416,7 +433,7 @@ protected:
   uint8_t gOffset;    ///< Index of green byte
   uint8_t bOffset;    ///< Index of blue byte
   uint8_t wOffset;    ///< Index of white (==rOffset if no white)
-  uint32_t endTime;   ///< Latch timing reference
+  uint32_t endTime = 0;   ///< Latch timing reference
 
 #ifdef __AVR__
   volatile uint8_t *port; ///< Output PORT register

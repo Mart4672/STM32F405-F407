@@ -1,8 +1,9 @@
 #include "EventLoop.hpp"
 #include "Adafruit_NeoPixel.hpp"
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
-// #include "stm32f4xx_hal.h"
-#include "main.h"   // Include main header for HAL and GPIO definitions
+// Include GPIO definitions
+// Also includes stm32f4xx_hal.h
+#include "main.h"
 // #include "CppBlinkPinout.hpp" // TODO delete later if not needed
 #include "GpioPin.hpp"
 #include "CppTimerManager.hpp"
@@ -290,8 +291,14 @@ void StartBlink4(void *argument)
 /* USER CODE END Header_StartNeoBlink */
 void StartNeoBlink(void *argument)
 {
-    // TODO define the neoPixels
-    // GpioPin led4(LED4_Pin, GPIOD);
+    GpioPin neoPixels(NEO_Pin, NEO_GPIO_Port);
+    uint16_t n = 2; // Number of NeoPixels
+    // TODO confirm that this is the correct type
+    // neoPixelType type = NEO_GRB + NEO_KHZ800;
+
+    // auto neoPixel = Adafruit_NeoPixel(n, pin, type);
+    auto neoPixel = Adafruit_NeoPixel(n, neoPixels);
+
     uint32_t neoBlinkTime = timerManager.getHWTimerCount();
     // TODO add logic for dealing with overflow
     // uint32_t neoBlinkOverflow = timerManager.getHWTimerOverflow();

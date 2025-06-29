@@ -11,6 +11,9 @@ public:
     void Set();
     void Reset();
     void Toggle();
+    void SetMode(unsigned long pinMode, unsigned long pullMode, unsigned long speed);
+    uint16_t getPin() const { return mGpioPin; }
+    GPIO_TypeDef* getPort() const { return mGpioPort; }
 
 private:
     uint16_t mGpioPin;

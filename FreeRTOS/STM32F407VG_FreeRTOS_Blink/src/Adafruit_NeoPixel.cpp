@@ -81,11 +81,18 @@
               pixel.
   @return  Adafruit_NeoPixel object. Call the begin() function before use.
 */
-Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, int16_t p, neoPixelType t)
-    : begun(false), brightness(0), pixels(NULL), endTime(0) {
-  updateType(t);
-  updateLength(n);
-  setPin(p);
+Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n,
+                                     GpioPin neoPixelPin,
+                                     neoPixelType t) :
+        mNeoPixelPin(neoPixelPin.getPin(), neoPixelPin.getPort()),
+        begun(false),
+        brightness(0),
+        pixels(NULL)
+{
+    // mNeoPixelPin = GpioPin(neoPixelPin.getPin(), neoPixelPin.getPort());
+    updateType(t);
+    updateLength(n);
+    // setPin(neoPixelPin);
 
 #if defined(ESP32)
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
@@ -104,19 +111,20 @@ Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, int16_t p, neoPixelType t)
            'new' keyword with the first constructor syntax (length, pin,
            type).
 */
-Adafruit_NeoPixel::Adafruit_NeoPixel()
-    :
-#if defined(NEO_KHZ400)
-      is800KHz(true),
-#endif
-      begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0),
-      pixels(NULL), rOffset(1), gOffset(0), bOffset(2), wOffset(1), endTime(0) {
-}
+// Adafruit_NeoPixel::Adafruit_NeoPixel()
+//     :
+// #if defined(NEO_KHZ400)
+//       is800KHz(true),
+// #endif
+//       begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0),
+//       pixels(NULL), rOffset(1), gOffset(0), bOffset(2), wOffset(1), endTime(0) {
+// }
 
 /*!
   @brief   Deallocate Adafruit_NeoPixel object, set data pin back to INPUT.
 */
-Adafruit_NeoPixel::~Adafruit_NeoPixel() {
+Adafruit_NeoPixel::~Adafruit_NeoPixel()
+{
 #ifdef ARDUINO_ARCH_ESP32
   // Release RMT resources (RMT channels and led_data)
   // by indirectly calling into espShow()
@@ -131,9 +139,9 @@ Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   rp2040releasePIO();
 #endif
 
-  free(pixels);
-  if (pin >= 0)
-    pinMode(pin, INPUT);
+    free(pixels);
+    // Optionally set the GPIO PIN to INPUT mode
+    mNeoPixelPin.SetMode(GPIO_MODE_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
 }
 
 /*!
@@ -141,13 +149,20 @@ Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   @returns False if we weren't able to claim resources required
 */
 bool Adafruit_NeoPixel::begin(void) {
-  if (pin >= 0) {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
-  } else {
-    begun = false;
-    return false;
-  }
+    // check if the NeoPixel pin is valid
+    if (mNeoPixelPin.getPin() > 0)
+    {
+        // Set the pin to output mode
+        mNeoPixelPin.SetMode(GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+        // Set pin low (although it should be low already)
+        mNeoPixelPin.Reset();
+    }
+    else
+    {
+        // Invalid pin, cannot proceed
+        begun = false;
+        return false;
+    }
 
 #if defined(ARDUINO_ARCH_RP2040)
   // if we're calling begin() again, unclaim any existing PIO resc.
@@ -441,7 +456,11 @@ void Adafruit_NeoPixel::show(void) {
   // NRF52 may use PWM + DMA (if available), may not need to disable interrupt
   // ESP32 may not disable interrupts because espShow() uses RMT which tries to acquire locks
 #if !(defined(NRF52) || defined(NRF52_SERIES) || defined(ESP32))
-  noInterrupts(); // Need 100% focus on instruction timing
+    // noInterrupts(); // Need 100% focus on instruction timing
+    // Disable STM32F4 interrupts
+    // disabling interrupts could cause other problems
+    // so use this with extreme caution and comment out if not needed
+    __disable_irq();
 #endif
 
 #if defined(__AVR__)
@@ -3375,27 +3394,42 @@ if(is800KHz) {
   // END ARCHITECTURE SELECT ------------------------------------------------
 
 #if !(defined(NRF52) || defined(NRF52_SERIES) || defined(ESP32))
-  interrupts();
+    // interrupts();
+    // Enable STM32F4 interrupts
+    // comment out if the earlier __disable_irq() call was also commented out
+    __enable_irq();
 #endif
 
-//   TODO use hardware timer to set endTime
-//   endTime = micros(); // Save EOD time for latch on next call
-  endTime = 0;
+    endTime = micros(); // Save EOD time for latch on next call
+    endTime = 0;
 }
 
 /*!
-  @brief   Set/change the NeoPixel output pin number. Previous pin,
+  @brief   Set/change the NeoPixel output pin. Previous pin,
            if any, is set to INPUT and the new pin is set to OUTPUT.
   @param   p  Arduino pin number (-1 = no pin).
 */
-void Adafruit_NeoPixel::setPin(int16_t p) {
-  if (begun && (pin >= 0))
-    pinMode(pin, INPUT); // Disable existing out pin
-  pin = p;
-  if (begun) {
-    pinMode(p, OUTPUT);
-    digitalWrite(p, LOW);
-  }
+void Adafruit_NeoPixel::setPin(GpioPin newNeoPixelPin)
+{
+    // check if the current NeoPixel pin is valid
+    if(begun && (mNeoPixelPin.getPin() > 0))
+    {
+        // Set the old pin to input mode
+        mNeoPixelPin.SetMode(GPIO_MODE_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
+        // Set pin low (although it should be low already)
+        mNeoPixelPin.Reset();
+    }
+
+    // assign the new pin
+    mNeoPixelPin = newNeoPixelPin;
+    if (begun)
+    {
+        // Set the pin to output mode
+        mNeoPixelPin.SetMode(GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+        // Set pin low (although it should be low already)
+        mNeoPixelPin.Reset();
+    }
+
 #if defined(__AVR__)
   port = portOutputRegister(digitalPinToPort(p));
   pinMask = digitalPinToBitMask(p);

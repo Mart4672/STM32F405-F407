@@ -253,18 +253,25 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, NEO_Pin|LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin LED4_Pin */
-  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin;
+  /*Configure GPIO pins : NEO_Pin|LED1_Pin LED2_Pin LED3_Pin LED4_Pin */
+  GPIO_InitStruct.Pin = NEO_Pin|LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
+    // TODO check if this actually works or if all pins on the same port 
+    // need to be initialized at the same speed
+    // initialize NEO_Pin with a faster speed
+    GPIO_InitTypeDef GPIO_InitStruct_Neo = {0};
+    HAL_GPIO_WritePin(GPIOD, NEO_Pin, GPIO_PIN_RESET);
+    GPIO_InitStruct_Neo.Pin = NEO_Pin;
+    GPIO_InitStruct_Neo.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct_Neo.Pull = GPIO_NOPULL;
+    GPIO_InitStruct_Neo.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct_Neo);
 }
 
 /* USER CODE BEGIN 4 */

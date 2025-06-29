@@ -21,7 +21,7 @@ constexpr uint32_t blink3TaskPeriod = 50'000'000;
 constexpr uint32_t blink4TaskPeriod = 100'000'000;
 
 // NeoPixel Blink Task Period in microseconds
-constexpr uint32_t neoBlinkTaskPeriod = 100'000'000;
+constexpr uint32_t neoBlinkTaskPeriod = 20'000'000;
 
 /* Definitions for neoBlink */
 osThreadId_t neoBlinkHandle;
@@ -171,6 +171,32 @@ void StartBlink1(void *argument)
             led1.Set();
             osDelay(10);
             led1.Reset();
+
+            // seeing that calling 1'680'000'000 NOPs takes 40s instead of 10s
+            // The number of NOPs called in the NeoPixel library has been decreased by a factor of 4
+            // but the NEO Pixel LEDs are still not lighting up properly
+
+            // __disable_irq();
+            // // The number of NOPs needed for proper timing is:
+            // //  1,000,000,000ns / 5.95238 ns = 168,000,000 cycles
+            // uint32_t totalNOPs = 1'680'000'000; // Number of NOPs needed for 10s
+            // uint32_t ledOnNOPs = 168'000'000 / 10; // Number of NOPs needed for .1s
+            // uint32_t ledOffNOPs = totalNOPs - ledOnNOPs; // Number of NOPs needed for 9.9s
+
+            // while (true)
+            // {
+            //     for (uint32_t j = 0; j < ledOffNOPs; j++)
+            //     {
+            //         __NOP();
+            //     }
+            //     // blink the led
+            //     led1.Set();
+            //     for (uint32_t j = 0; j < ledOnNOPs; j++)
+            //     {
+            //         __NOP();
+            //     }
+            //     led1.Reset();
+            // }
         }
         // Yield to allow other tasks to run
         osDelay(1);
@@ -291,13 +317,26 @@ void StartBlink4(void *argument)
 /* USER CODE END Header_StartNeoBlink */
 void StartNeoBlink(void *argument)
 {
-    GpioPin neoPixels(NEO_Pin, NEO_GPIO_Port);
+    GpioPin neoPixelPin(NEO_Pin, NEO_GPIO_Port);
     uint16_t n = 2; // Number of NeoPixels
     // TODO confirm that this is the correct type
     // neoPixelType type = NEO_GRB + NEO_KHZ800;
 
     // auto neoPixel = Adafruit_NeoPixel(n, pin, type);
-    auto neoPixel = Adafruit_NeoPixel(n, neoPixels);
+    auto neoPixels = Adafruit_NeoPixel(n, neoPixelPin);
+    // neoPixels.micros = std::bind(&CppTimerManager::getHWTimerCount);
+
+    // set the function for reading the hardware timer count
+    neoPixels.micros = timerManager.getHWTimerCount;
+
+    // Initialize the NeoPixel library
+    neoPixels.begin();
+
+    // set initial brightness
+    neoPixels.setBrightness(15); // Set brightness to a moderate level (0-255)
+
+    // Set all pixels to off initially
+    neoPixels.clear();
 
     uint32_t neoBlinkTime = timerManager.getHWTimerCount();
     // TODO add logic for dealing with overflow
@@ -311,10 +350,21 @@ void StartNeoBlink(void *argument)
             // Reset the timer
             neoBlinkTime = timerManager.getHWTimerCount();
             // blink the neoPixel
-            osDelay(1000);
-            // led4.Set();
-            // osDelay(10);
-            // led4.Reset();
+            for(uint16_t i = 0; i < n; i++)
+            {
+                // neoPixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+                // Here we're using a moderately bright green color:
+                // neoPixels.setPixelColor(i, neoPixels.Color(15, 0, 0));
+                // Alternative way to set color
+                neoPixels.setPixelColor(i, 15, 0, 0);
+
+                // Send the updated pixel colors to the hardware
+                neoPixels.show();
+                // Delay for a short period to see each pixel update
+                osDelay(1000);
+            }
+            // Set all pixels to off
+            neoPixels.clear();
         }
         // Yield to allow other tasks to run
         osDelay(1);

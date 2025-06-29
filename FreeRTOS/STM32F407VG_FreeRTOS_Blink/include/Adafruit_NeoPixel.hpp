@@ -36,31 +36,6 @@
 #ifndef ADAFRUIT_NEOPIXEL_H
 #define ADAFRUIT_NEOPIXEL_H
 
-#ifdef ARDUINO
-#include <Arduino.h>
-
-#ifdef USE_TINYUSB // For Serial when selecting TinyUSB
-#include <Adafruit_TinyUSB.h>
-#endif
-
-#endif
-
-#ifdef TARGET_LPC1768
-#include <Arduino.h>
-#endif
-
-#if defined(TARGET_GIGA) || defined(TARGET_M4)
-#include "mbed.h"
-#include "pinDefinitions.h"
-#endif
-
-#if defined(ARDUINO_ARCH_RP2040)
-#include <stdlib.h>
-#include "hardware/pio.h"
-#include "hardware/clocks.h"
-#include "rp2040_pio.h"
-#endif
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <functional>
@@ -71,7 +46,6 @@
 // if setting micros works as intended
 #include "CppTimerManager.hpp"
 
-// TODO include HAL
 // TODO assign HAL functions in a similar way to micros?
 #include "stm32f4xx_hal.h"
 
@@ -150,20 +124,17 @@
 // other MCUs to remove v1 support and save a little space.
 
 #define NEO_KHZ800 0x0000 ///< 800 KHz data transmission
-#ifndef __AVR_ATtiny85__
-#define NEO_KHZ400 0x0100 ///< 400 KHz data transmission
-#endif
 
 // If 400 KHz support is enabled, the third parameter to the constructor
 // requires a 16-bit value (in order to select 400 vs 800 KHz speed).
 // If only 800 KHz is enabled (as is default on ATtiny), an 8-bit value
 // is sufficient to encode pixel color order, saving some space.
 
-#ifdef NEO_KHZ400
-typedef uint16_t neoPixelType; ///< 3rd arg to Adafruit_NeoPixel constructor
-#else
+// #ifdef NEO_KHZ400
+// typedef uint16_t neoPixelType; ///< 3rd arg to Adafruit_NeoPixel constructor
+// #else
 typedef uint8_t neoPixelType; ///< 3rd arg to Adafruit_NeoPixel constructor
-#endif
+// #endif
 
 // These two tables are declared outside the Adafruit_NeoPixel class
 // because some boards may require oldschool compilers that don't
@@ -229,11 +200,6 @@ static const uint8_t _NeoPixelGammaTable[256] = {
 /* Declare external methods required by the Adafruit_NeoPixel implementation
     for specific hardware/library versions
 */
-#if defined(ESP32)
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-extern "C" void espInit();
-#endif
-#endif
 
 /*!
     @brief  Class that stores state and functions for interacting with
@@ -251,17 +217,17 @@ public:
     // Function pointer to read hardware timer
     std::function<uint32_t()> micros;
 
-  bool begin(void);
-  void show(void);
-  void setPin(GpioPin newNeoPixelPin);
-  void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
-  void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-  void setPixelColor(uint16_t n, uint32_t c);
-  void fill(uint32_t c = 0, uint16_t first = 0, uint16_t count = 0);
-  void setBrightness(uint8_t);
-  void clear(void);
-  void updateLength(uint16_t n);
-  void updateType(neoPixelType t);
+    bool begin(void);
+    void show(void);
+    void setPin(GpioPin newNeoPixelPin);
+    void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
+    void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+    void setPixelColor(uint16_t n, uint32_t c);
+    void fill(uint32_t c = 0, uint16_t first = 0, uint16_t count = 0);
+    void setBrightness(uint8_t);
+    void clear(void);
+    void updateLength(uint16_t n);
+    void updateType(neoPixelType t);
   /*!
     @brief   Check whether a call to show() will start sending data
              immediately or will 'block' for a required interval. NeoPixels
@@ -407,50 +373,22 @@ public:
   static neoPixelType str2order(const char *v);
 
 private:
-#if defined(ARDUINO_ARCH_RP2040)
-  bool   rp2040claimPIO(void);
-  void   rp2040releasePIO(void);
-  void   rp2040Show(uint8_t *pixels, uint32_t numBytes);
-  PIO    pio = NULL;
-  uint   pio_sm = -1;
-  uint   pio_program_offset = 0;
-#endif
+
 
 protected:
-#ifdef NEO_KHZ400 // If 400 KHz NeoPixel support enabled...
-  bool is800KHz; ///< true if 800 KHz pixels
-#endif
-
     // GPIO pin used for NeoPixel data output
     GpioPin mNeoPixelPin;
-  bool begun;         ///< true if begin() previously called successfully
-  uint16_t numLEDs;   ///< Number of RGB LEDs in strip
-  uint16_t numBytes;  ///< Size of 'pixels' buffer below
-  int16_t pin;        ///< Output pin number (-1 if not yet set)
-  uint8_t brightness; ///< Strip brightness 0-255 (stored as +1)
-  uint8_t *pixels;    ///< Holds LED color values (3 or 4 bytes each)
-  uint8_t rOffset;    ///< Red index within each 3- or 4-byte pixel
-  uint8_t gOffset;    ///< Index of green byte
-  uint8_t bOffset;    ///< Index of blue byte
-  uint8_t wOffset;    ///< Index of white (==rOffset if no white)
-  uint32_t endTime = 0;   ///< Latch timing reference
-
-#ifdef __AVR__
-  volatile uint8_t *port; ///< Output PORT register
-  uint8_t pinMask;        ///< Output PORT bitmask
-#endif
-
-#if defined(ARDUINO_ARCH_STM32) || \
-    defined(ARDUINO_ARCH_ARDUINO_CORE_STM32) || \
-    defined(ARDUINO_ARCH_CH32) || \
-    defined(_PY32_DEF_)
-  GPIO_TypeDef *gpioPort; ///< Output GPIO PORT
-  uint32_t gpioPin;       ///< Output GPIO PIN
-#endif
-
-#if defined(TARGET_GIGA) || defined(TARGET_M4)
-  mbed::DigitalInOut *gpio;
-#endif
+    bool begun = false;         ///< true if begin() previously called successfully
+    uint16_t numLEDs = 0;   ///< Number of RGB LEDs in strip
+    uint16_t numBytes = 0;  ///< Size of 'pixels' buffer below
+    int16_t pin = -1;        ///< Output pin number (-1 if not yet set)
+    uint8_t brightness = 0; ///< Strip brightness 0-255 (stored as +1)
+    uint8_t *pixels = nullptr;    ///< Holds LED color values (3 or 4 bytes each)
+    uint8_t rOffset = 1;    ///< Red index within each 3- or 4-byte pixel
+    uint8_t gOffset = 0;    ///< Index of green byte
+    uint8_t bOffset = 2;    ///< Index of blue byte
+    uint8_t wOffset = 1;    ///< Index of white (==rOffset if no white)
+    uint32_t endTime = 0;   ///< Latch timing reference
 
 };
 

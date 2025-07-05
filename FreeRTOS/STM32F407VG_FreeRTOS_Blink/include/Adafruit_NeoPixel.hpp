@@ -50,6 +50,7 @@
 #include "stm32f4xx_hal.h"
 
 #include "GpioPin.hpp"
+#include <vector>
 
 // The order of primary colors in the NeoPixel data stream can vary among
 // device types, manufacturers and even different revisions of the same
@@ -220,7 +221,7 @@ public:
     bool begin(void);
     void show(void);
     void setPin(GpioPin newNeoPixelPin);
-    void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
+    void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, std::vector<uint8_t>& colors);
     void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
     void setPixelColor(uint16_t n, uint32_t c);
     void fill(uint32_t c = 0, uint16_t first = 0, uint16_t count = 0);
@@ -389,7 +390,7 @@ protected:
     uint8_t bOffset = 2;    ///< Index of blue byte
     uint8_t wOffset = 1;    ///< Index of white (==rOffset if no white)
     uint32_t endTime = 0;   ///< Latch timing reference
-
+    uint8_t testPixels[6] = {0, 0, 0, 0, 0, 0}; ///< Test pixels for debugging
 };
 
 #endif // ADAFRUIT_NEOPIXEL_H

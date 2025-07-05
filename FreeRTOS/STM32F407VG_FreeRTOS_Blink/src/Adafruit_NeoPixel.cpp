@@ -137,9 +137,16 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
 
     // Allocate new data -- note: ALL PIXELS ARE CLEARED
     numBytes = n * ((wOffset == rOffset) ? 3 : 4);
-    if((pixels = (uint8_t *)malloc(numBytes)))
+    // call malloc() to allocate memory for the pixels
+    pixels = (uint8_t *)malloc(numBytes);
+
+    // If allocation was successful, clear the pixel data
+    // memset() is used to set all bytes to 0
+    // This is important to ensure that the pixels are initialized to a known state
+    // before they are used in the application
+    if(pixels != nullptr)
     {
-        memset(pixels, 0, numBytes);
+        memset(pixels, 9, numBytes);
         numLEDs = n;
     }
     else
@@ -247,7 +254,8 @@ void Adafruit_NeoPixel::show(void) {
 // ARM M4 secondary MCU in STM32H747xI/G (in Arduino Giga R1)
 // Might be similar to the ARM M4 in STM32F407VG
 #if defined(STM32H747_M4)
-    uint8_t *p = pixels;
+    // uint8_t *p = pixels;
+    uint8_t *p = testPixels;
     uint8_t *end = p + numBytes;
     uint8_t pix;
     uint8_t bitMask = 0x80;
@@ -265,7 +273,7 @@ void Adafruit_NeoPixel::show(void) {
                 // T1H = 550/700/5500ns (min/typ/max)
                 // The number of NOPs needed for proper timing is:
                 // 700ns / 5.95238 ns = 117.6 cycles
-                for (int j = 0; j < 30; j++)
+                for (int j = 0; j < 118; j++)
                 {
                     __NOP();
                 }
@@ -274,7 +282,7 @@ void Adafruit_NeoPixel::show(void) {
                 // TXL = 450/600/5000ns (min/typ/max)
                 // The number of NOPs needed for proper timing is:
                 // 600ns / 5.95238 ns = 100.8 cycles
-                for (int j = 0; j < 25; j++)
+                for (int j = 0; j < 101; j++)
                 {
                     __NOP();
                 }
@@ -285,7 +293,7 @@ void Adafruit_NeoPixel::show(void) {
                 // T0H = 200/350/500ns (min/typ/max)
                 // The number of NOPs needed for proper timing is:
                 // 350ns / 5.95238 ns = 58.8 cycles
-                for (int j = 0; j < 15; j++)
+                for (int j = 0; j < 59; j++)
                 {
                     __NOP();
                 }
@@ -294,7 +302,7 @@ void Adafruit_NeoPixel::show(void) {
                 // TXL = 450/600/5000ns (min/typ/max)
                 // The number of NOPs needed for proper timing is:
                 // 600ns / 5.95238 ns = 100.8 cycles
-                for (int j = 0; j < 25; j++)
+                for (int j = 0; j < 101; j++)
                 {
                     __NOP();
                 }
@@ -470,7 +478,8 @@ void Adafruit_NeoPixel::setPin(GpioPin newNeoPixelPin)
 void Adafruit_NeoPixel::setPixelColor(uint16_t n,
                                       uint8_t r,
                                       uint8_t g,
-                                      uint8_t b)
+                                      uint8_t b,
+                                      std::vector<uint8_t>& colors)
 {
     if(n < numLEDs)
     {
@@ -496,9 +505,21 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n,
             p[wOffset] = 0;
         }
         // R,G,B always stored
-        p[rOffset] = r;
-        p[gOffset] = g;
-        p[bOffset] = b;
+        // p[rOffset] = r;
+        // p[gOffset] = g;
+        // p[bOffset] = b;
+        testPixels[0] = r;
+        testPixels[1] = g;
+        testPixels[2] = b;
+
+        // Store the colors in the vector if provided
+        // colors[0] = p[rOffset];
+        // colors[1] = p[gOffset];
+        // colors[2] = p[bOffset];
+
+        colors[0] = testPixels[0];
+        colors[1] = testPixels[1];
+        colors[2] = testPixels[2];
     }
 }
 

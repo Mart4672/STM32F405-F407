@@ -317,6 +317,7 @@ void StartBlink4(void *argument)
 /* USER CODE END Header_StartNeoBlink */
 void StartNeoBlink(void *argument)
 {
+    GpioPin led4(LED4_Pin, GPIOD);
     GpioPin neoPixelPin(NEO_Pin, NEO_GPIO_Port);
     uint16_t n = 2; // Number of NeoPixels
     // TODO confirm that this is the correct type
@@ -356,7 +357,21 @@ void StartNeoBlink(void *argument)
                 // Here we're using a moderately bright green color:
                 // neoPixels.setPixelColor(i, neoPixels.Color(15, 0, 0));
                 // Alternative way to set color
-                neoPixels.setPixelColor(i, 15, 0, 0);
+                auto colorResult = std::vector<uint8_t>{0, 0, 0};
+                neoPixels.setPixelColor(i, 30, 20, 10, colorResult);
+
+                if(colorResult[0] == 0)
+                {
+                    // this error loop is getting triggered
+                    // TODO figure out the colors are not properly being set in the pixel buffer
+                    while(true)
+                    {
+                        led4.Set();
+                        osDelay(10);
+                        led4.Reset();
+                        osDelay(100);
+                    }
+                }
 
                 // Send the updated pixel colors to the hardware
                 neoPixels.show();

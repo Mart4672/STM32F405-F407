@@ -1,10 +1,8 @@
 #include "EventLoop.hpp"
-#include "Adafruit_NeoPixel.hpp"
 #include "cmsis_os.h"   // Include CMSIS RTOS header for osKernelStart and other RTOS functions
 // Include GPIO definitions
 // Also includes stm32f4xx_hal.h
 #include "main.h"
-// #include "CppBlinkPinout.hpp" // TODO delete later if not needed
 #include "GpioPin.hpp"
 #include "CppTimerManager.hpp"
 
@@ -318,27 +316,6 @@ void StartBlink4(void *argument)
 void StartNeoBlink(void *argument)
 {
     GpioPin led4(LED4_Pin, GPIOD);
-    GpioPin neoPixelPin(NEO_Pin, NEO_GPIO_Port);
-    uint16_t n = 2; // Number of NeoPixels
-    // TODO confirm that this is the correct type
-    // neoPixelType type = NEO_GRB + NEO_KHZ800;
-
-    // auto neoPixel = Adafruit_NeoPixel(n, pin, type);
-    auto neoPixels = Adafruit_NeoPixel(n, neoPixelPin);
-    // neoPixels.micros = std::bind(&CppTimerManager::getHWTimerCount);
-
-    // set the function for reading the hardware timer count
-    neoPixels.micros = timerManager.getHWTimerCount;
-
-    // Initialize the NeoPixel library
-    neoPixels.begin();
-
-    // set initial brightness
-    neoPixels.setBrightness(15); // Set brightness to a moderate level (0-255)
-
-    // Set all pixels to off initially
-    neoPixels.clear();
-
     uint32_t neoBlinkTime = timerManager.getHWTimerCount();
     // TODO add logic for dealing with overflow
     // uint32_t neoBlinkOverflow = timerManager.getHWTimerOverflow();
@@ -350,36 +327,10 @@ void StartNeoBlink(void *argument)
         {
             // Reset the timer
             neoBlinkTime = timerManager.getHWTimerCount();
-            // blink the neoPixel
-            for(uint16_t i = 0; i < n; i++)
-            {
-                // neoPixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-                // Here we're using a moderately bright green color:
-                // neoPixels.setPixelColor(i, neoPixels.Color(15, 0, 0));
-                // Alternative way to set color
-                auto colorResult = std::vector<uint8_t>{0, 0, 0};
-                neoPixels.setPixelColor(i, 30, 20, 10, colorResult);
-
-                if(colorResult[0] == 0)
-                {
-                    // this error loop is getting triggered
-                    // TODO figure out the colors are not properly being set in the pixel buffer
-                    while(true)
-                    {
-                        led4.Set();
-                        osDelay(10);
-                        led4.Reset();
-                        osDelay(100);
-                    }
-                }
-
-                // Send the updated pixel colors to the hardware
-                neoPixels.show();
-                // Delay for a short period to see each pixel update
-                osDelay(1000);
-            }
-            // Set all pixels to off
-            neoPixels.clear();
+            // blink the LED
+            led4.Set();
+            osDelay(10);
+            led4.Reset();
         }
         // Yield to allow other tasks to run
         osDelay(1);

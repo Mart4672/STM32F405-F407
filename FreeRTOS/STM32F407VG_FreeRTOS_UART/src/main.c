@@ -42,6 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+UART_HandleTypeDef huart2;
+
 TIM_HandleTypeDef htim5;
 
 /* USER CODE BEGIN PV */
@@ -53,6 +55,7 @@ volatile uint32_t timerOverflow = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 uint32_t ReadHardwareTimer()
@@ -112,12 +115,16 @@ int main(void)
     // use HAL_TIM_PeriodElapsedCallback with HAL_TIM_Base_Start_IT to run a callback at a specific interval
     // use HAL_TIM_Base_Start when not using the callback
 
+    // Initialize the interface of the Hardware Timer in the C++ Event Loop
     InitializeInterface(ReadHardwareTimer, ReadTimerOverflow);
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+
+    MX_USART2_UART_Init();
+
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -238,6 +245,27 @@ static void MX_TIM5_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 57600;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart2) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -288,23 +316,17 @@ static void MX_GPIO_Init(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  /* USER CODE BEGIN Callback 0 */
     /* Prevent unused argument(s) compilation warning */
     UNUSED(htim);
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM6)
-  {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-    // Ensure that it was timer 5 that interrupted
+    if(htim->Instance == TIM6)
+    {
+        HAL_IncTick();
+    }
     if(htim == &htim5)
     {
         timerOverflow++;
     }
-
-  /* USER CODE END Callback 1 */
 }
 
 /**

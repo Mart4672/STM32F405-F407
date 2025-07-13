@@ -44,12 +44,17 @@
 
 UART_HandleTypeDef huart2;
 
+// Interrumpt status flag for UART2
+// TODO uncomment this when ready to use
+// __IO ITStatus uart2Status = RESET;
+
+// Flag to wait for UART transmit to complete
+// TODO uncomment this when ready to use
+// static const uint8_t waitForUartTransmit = 0;
+
 TIM_HandleTypeDef htim5;
 
-/* USER CODE BEGIN PV */
 volatile uint32_t timerOverflow = 0;
-
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -124,6 +129,29 @@ int main(void)
   MX_GPIO_Init();
 
     MX_USART2_UART_Init();
+
+    // TODO remove this when ready
+    HAL_Delay(1000);
+
+    // TODO move this to the EventLoop
+    char buf1[100];
+    int len1;
+    len1 = sprintf(buf1, "Hello There!\r\n");
+    HAL_UART_Transmit(&huart2, (uint8_t*)buf1, len1, 100);
+    // TODO use waitForUartTransmit
+    // TODO use HAL_UART_Transmit_IT to transmit in interrupt mode in C++ Event Loop
+
+
+
+    while(1)
+    {
+        HAL_Delay(1000);
+        HAL_UART_Transmit(&huart2, (uint8_t*)buf1, len1, 100);
+    }
+
+
+
+
 
   /* USER CODE BEGIN 2 */
 
@@ -325,6 +353,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
     if(htim == &htim5)
     {
+        // TODO confirm that this actually gets updated
         timerOverflow++;
     }
 }
@@ -335,13 +364,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+    __disable_irq();
+    // Set LED1 high to indicate an error
+    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+    while (1)
+    {
+    }
 }
 
 #ifdef  USE_FULL_ASSERT

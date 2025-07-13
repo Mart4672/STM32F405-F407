@@ -27,4 +27,4 @@ This code is also compatible with the following STM Microcontrollers:
 - save the file using the user interface, the app should prompt you to generate code
     - select yes
     - handle any warnings on a case-by-case basis to allow for code to be generated
-- the changes made to the main.h, main.c, and stm32f4xx_hal_conf.h files can be brought over to this example
+- the changes made to the main.h, main.c, stm32f4xx_hal_conf.h, and stm32f4xx_hal_msp.c files can be brought over to this example

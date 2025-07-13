@@ -134,7 +134,7 @@ extern "C"
 #define USARTx USART2
 
 // Baud Rate
-#define UART2_BAUD_RATE 9600 // 9600, 57600, 115200
+#define UART2_BAUD_RATE 57600 // 9600, 57600, 115200
 
 // Funtions
 #define USARTx_CLK_ENABLE()         __HAL_RCC_USART2_CLK_ENABLE();

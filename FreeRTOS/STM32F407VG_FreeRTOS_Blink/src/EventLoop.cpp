@@ -69,8 +69,6 @@ void StartBlink4(void *argument);
 // Global timer manager instance
 CppTimerManager timerManager = CppTimerManager();
 
-// TODO update the NeoPixel library to use the timer class
-
 // Main Cpp event loop to run application
 void EventLoopCpp()
 {

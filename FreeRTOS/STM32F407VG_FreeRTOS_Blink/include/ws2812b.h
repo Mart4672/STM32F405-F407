@@ -21,13 +21,14 @@
 // LED output port
 #define WS2812B_PORT GPIOC
 // LED output pins
+// TODO figure out which pins to use
 #define WS2812B_PINS (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)
 // How many LEDs are in the series - only valid multiples by two
-#define WS2812B_NUMBER_OF_LEDS 60
+#define WS2812B_NUMBER_OF_LEDS 2
 
 // Number of paralel output LED strips. Each has its own buffer.
 // Supports up to 16 outputs on a single GPIO port
-#define WS2812_BUFFER_COUNT 4
+#define WS2812_BUFFER_COUNT 1
 
 // Choose one of the bit-juggling setpixel implementation
 // *******************************************************
@@ -39,7 +40,7 @@
 
 // DEBUG OUTPUT
 // ********************
-
+// TODO figure out which pins and ports to use or comment out
 // Set during DMA Half and Full transfer IRQ to debug how long IRQ is processing
 #define LED_BLUE_PORT GPIOD
 #define LED_BLUE_PIN GPIO_PIN_15
@@ -77,7 +78,7 @@ typedef struct WS2812_Struct
 	uint32_t repeatCounter;
 } WS2812_Struct;
 
-WS2812_Struct ws2812b;
+extern WS2812_Struct ws2812b;
 
 // Bit band stuff
 #define RAM_BASE 0x20000000

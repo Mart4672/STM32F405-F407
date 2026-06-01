@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 #include "stm32f4xx_hal.h"
-#include "ws2812b/ws2812b.h"
+#include "ws2812b.h"
 #include <stdlib.h>
 
 // RGB Framebuffers

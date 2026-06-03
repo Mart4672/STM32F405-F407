@@ -23,6 +23,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "EventLoop.hpp"
+
+#include "visEffect.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -149,6 +152,21 @@ int main(void)
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
+
+    // NOTE: visEffect.c functions are unable to be called in EventLoop.cpp due to an undefined reference error
+    // visEffect.c functions can be called here without causing build issues
+    // This issue can be possibly be resolved in the future by moving the visEffect.c functions into a C++ file
+
+    // Optionally enable visEffect.c functions to see the ws2812b LED change colors
+    // STEVE V1.1.0 does not have a logic level shifter for the ws2812b LED, so the LED will only light up into a blinding white debug mode unless the output voltage of the LED data pin (DIN) is 70% or higher of the ws2812b's input voltage (VSS).
+    // VSS is usually 5V on the STEVE board, so a power supply set to a lower voltage level (3.8 to 4.5V) would need to be connected to the "5V-1" connector to even test if the microcontroller output is enough to reach that 70% VSS threshold to communicate with the ws2812b LED.
+
+    // visInit();
+
+    // while (1)
+    // {
+    //     visHandle();
+    // }
 
   EventLoopC();
 

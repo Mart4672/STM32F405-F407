@@ -19,10 +19,9 @@
 // GPIO enable command
 #define WS2812B_GPIO_CLK_ENABLE() __HAL_RCC_GPIOC_CLK_ENABLE()
 // LED output port
-#define WS2812B_PORT GPIOC
+#define WS2812B_PORT GPIOD
 // LED output pins
-// TODO figure out which pins to use
-#define WS2812B_PINS (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)
+#define WS2812B_PINS (GPIO_PIN_11)
 // How many LEDs are in the series - only valid multiples by two
 #define WS2812B_NUMBER_OF_LEDS 2
 
@@ -40,14 +39,14 @@
 
 // DEBUG OUTPUT
 // ********************
-// TODO figure out which pins and ports to use or comment out
+
 // Set during DMA Half and Full transfer IRQ to debug how long IRQ is processing
 #define LED_BLUE_PORT GPIOD
 #define LED_BLUE_PIN GPIO_PIN_15
 
 // Set during full transfer DMA and TIM1 IRQ
-#define LED_ORANGE_PORT GPIOD
-#define LED_ORANGE_PIN GPIO_PIN_13
+#define LED_YELLOW_PORT GPIOD
+#define LED_YELLOW_PIN GPIO_PIN_13
 
 
 // Public functions

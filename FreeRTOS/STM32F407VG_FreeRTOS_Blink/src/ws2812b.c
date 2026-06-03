@@ -58,7 +58,7 @@ static void ws2812b_gpio_init(void)
 	HAL_GPIO_Init(WS2812B_PORT, &GPIO_InitStruct);
 
 	// Enable output pins for debuging to see DMA Full and Half transfer interrupts
-	#if defined(LED_BLUE_PORT) && defined(LED_ORANGE_PORT)
+	#if defined(LED_BLUE_PORT) && defined(LED_YELLOW_PORT)
 		__HAL_RCC_GPIOD_CLK_ENABLE();
 
 		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -67,8 +67,8 @@ static void ws2812b_gpio_init(void)
 
 		GPIO_InitStruct.Pin = LED_BLUE_PIN;
 		HAL_GPIO_Init(LED_BLUE_PORT, &GPIO_InitStruct);
-		GPIO_InitStruct.Pin = LED_ORANGE_PIN;
-		HAL_GPIO_Init(LED_ORANGE_PORT, &GPIO_InitStruct);
+		GPIO_InitStruct.Pin = LED_YELLOW_PIN;
+		HAL_GPIO_Init(LED_YELLOW_PORT, &GPIO_InitStruct);
 	#endif
 }
 
@@ -333,8 +333,8 @@ void DMA_TransferHalfHandler(DMA_HandleTypeDef *DmaHandle)
 void DMA_TransferCompleteHandler(DMA_HandleTypeDef *DmaHandle)
 {
 
-	#if defined(LED_ORANGE_PORT)
-		LED_ORANGE_PORT->BSRR = LED_ORANGE_PIN;
+	#if defined(LED_YELLOW_PORT)
+		LED_YELLOW_PORT->BSRR = LED_YELLOW_PIN;
 	#endif
 
 	if(ws2812b.repeatCounter == WS2812B_NUMBER_OF_LEDS)
@@ -386,8 +386,8 @@ void DMA_TransferCompleteHandler(DMA_HandleTypeDef *DmaHandle)
 
 
 
-	#if defined(LED_ORANGE_PORT)
-		LED_ORANGE_PORT->BSRR = LED_ORANGE_PIN << 16;
+	#if defined(LED_YELLOW_PORT)
+		LED_YELLOW_PORT->BSRR = LED_YELLOW_PIN << 16;
 	#endif
 
 }
@@ -409,14 +409,14 @@ void DMA2_Stream2_IRQHandler(void)
 
 void TIM1_UP_TIM10_IRQHandler(void)
 {
-	#if defined(LED_ORANGE_PORT)
-		LED_ORANGE_PORT->BSRR = LED_ORANGE_PIN;
+	#if defined(LED_YELLOW_PORT)
+		LED_YELLOW_PORT->BSRR = LED_YELLOW_PIN;
 	#endif
 
 	HAL_TIM_IRQHandler(&TIM1_handle);
 
-	#if defined(LED_ORANGE_PORT)
-		LED_ORANGE_PORT->BSRR = LED_ORANGE_PIN << 16;
+	#if defined(LED_YELLOW_PORT)
+		LED_YELLOW_PORT->BSRR = LED_YELLOW_PIN << 16;
 	#endif
 }
 

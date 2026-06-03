@@ -224,12 +224,18 @@ void StartBlink2(void *argument)
         {
             // Reset the timer
             blink2Time = timerManager.getHWTimerCount();
-            // blink the LED
-            led2.Set();
-            buzzer.Set();
-            osDelay(100);
-            led2.Reset();
-            buzzer.Reset();
+
+            // toggle the buzzer
+            for (int i = 0; i < 500; i++)
+            {
+                buzzer.Set();
+                osDelay(1);
+                buzzer.Reset();
+                osDelay(1);
+            }
+            // led2.Set();
+            // osDelay(100);
+            // led2.Reset();
         }
         // Yield to allow other tasks to run
         osDelay(1);
